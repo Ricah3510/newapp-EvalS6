@@ -1,0 +1,33 @@
+.popup {
+    position: fixed;
+
+    top: 20px;
+    right: 20px;
+
+    padding: 15px 20px;
+
+    border-radius: 8px;
+
+    color: white;
+
+    display: flex;
+    gap: 15px;
+    align-items: center;
+
+    z-index: 999;
+}
+
+.popup.success {
+    background-color: green;
+}
+
+.popup.error {
+    background-color: red;
+}
+
+.popup button {
+    background: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
