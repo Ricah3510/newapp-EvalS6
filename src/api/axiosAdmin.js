@@ -2,8 +2,8 @@ import axios from "axios";
 
 const apiAdmin = axios.create({
 
-    baseURL:
-        "http://localhost:8000/api/v1/admin",
+    // baseURL: "http://localhost:8000/api/v1/admin",
+    baseURL: import.meta.env.VITE_ADMIN_API_URL,
 
 });
 
