@@ -3,9 +3,11 @@ import { useParams } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import { getProductById } from "../services/productService";
 import AddToCartForm from "../components/AddToCartForm";
+import { getStockDisponible } from "../services/admin/stockService";
 function ProductFiche() {
     const [product, setProduct] = useState(null);
     const { id } = useParams();
+    const [stock, setStock] = useState(null);
     useEffect(() => {
         loadProduct();
     }, [id]);
@@ -13,6 +15,9 @@ function ProductFiche() {
         try {
             const data = await getProductById(id);
             setProduct(data.data);
+
+            const qty = await getStockDisponible(data.data.id);
+            setStock(qty);
         } catch (error) {
             console.error(error);
         }
@@ -38,6 +43,7 @@ function ProductFiche() {
                     __html: product.description
                 }}
             />
+            <p>Stock disponible : {stock === null ? "Chargement..." : stock}</p>
             <AddToCartForm productId={product.id} />
         </MainLayout>
 

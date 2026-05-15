@@ -7,11 +7,11 @@
 //             customer
 //         );
 //     return response.data;
-
 // };
 
 import api from "../../api/axios";
 import apiAdmin from "../../api/axiosAdmin";
+import nodeApi  from "../../api/axiosNode";
 
 export const registerCustomer = async (customer) => {
     const response = await api.post("/customer/register", customer);
@@ -171,4 +171,8 @@ export const addToCartWithToken = async (productId, quantity) => {
         }
     );
     return response.data;
+};
+
+export const updateOrderDate = async (orderId, date, heure) => {
+    await nodeApi.patch(`/orders/${orderId}/date`, { date, heure });
 };

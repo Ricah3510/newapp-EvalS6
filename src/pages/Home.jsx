@@ -30,7 +30,7 @@ function Home() {
                 categories.map((category) => (
                     <h3 key={category.id}>
                     <Link to={`/products?category_id=${category.id}`}>
-                    {category.id} - {category.name}
+                        {category.name}
                     </Link>
                 </h3>
                 ))

@@ -143,9 +143,9 @@ function ImportImages() {
                                 marginBottom: "0.25rem",
                             }}
                         >
-                            {log.status === "success" && "✅"}
-                            {log.status === "skipped" && "⚠️"}
-                            {log.status === "error"   && "❌"}
+                            {log.status === "success" && ""}
+                            {log.status === "skipped" && ""}
+                            {log.status === "error"   && ""}
                             &nbsp;{log.label}
                             {log.error && (
                                 <span style={{ fontSize: "0.85rem" }}>

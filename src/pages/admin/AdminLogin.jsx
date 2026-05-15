@@ -20,7 +20,6 @@ function AdminLogin() {
                 "18|tQSsCzHVY2lt5w51JsrLOS9vmD1uzTfsurL8FKd99238e37f"
             );
             navigate("/admin");
-
         } else {
             alert("Login incorrect");
         }

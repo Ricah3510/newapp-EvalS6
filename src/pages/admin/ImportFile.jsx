@@ -10,6 +10,7 @@ import {
     createProductSkeleton,
     updateProductDetails,
     updateProductStock,
+    updateOrderDate,
 } from "../../services/admin/importService";
 
 import {
@@ -23,26 +24,49 @@ import {
     shipOrder,
     invoiceOrder,
 } from "../../services/admin/orderAdminService";
+
+import {
+    validateCustomersCSV,
+    validateProductsCSV,
+    validateOrdersCSV
+} from "../../services/admin/validationService";
+import ValidationErrors from "../../components/admin/ValidationErrors";
 function ImportFile() {
 
     const [customerFile, setCustomerFile] = useState(null);
     const [customerCredentials, setCustomerCredentials] = useState([]);
-    const [productFile, setProductFile] = useState(null);
+    const [customerErrors, setCustomerErrors] = useState([]);
+    const [customerLoading,     setCustomerLoading]     = useState(false);
+    const [customerLogs,        setCustomerLogs]        = useState([]);
+
+    const [productFile,    setProductFile]    = useState(null);
+    const [productLoading, setProductLoading] = useState(false);
+    const [productLogs,    setProductLogs]    = useState([]);
+    const [productErrors,  setProductErrors]  = useState([]);
 
     // Commande
     const [orderFile,    setOrderFile]    = useState(null);
     const [orderLoading, setOrderLoading] = useState(false);
     const [orderLogs,    setOrderLogs]    = useState([]);
+    const [orderErrors,    setOrderErrors]    = useState([]);
 
     const handleCustomerFile = (e) => {
-        setCustomerFile(
-            e.target.files[0]
-        );
+        const file = e.target.files[0];
+        setCustomerFile(file);
+        setCustomerLogs([]);
+        setCustomerErrors([]);
+    
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const errors = validateCustomersCSV(ev.target.result);
+            setCustomerErrors(errors);
+        };
+        reader.readAsText(file);
     };
 
     const importCustomers = async () => {
         if (!customerFile) return;
-
+        setCustomerLoading(true);
         const reader = new FileReader();
         reader.onload = async (e) => {
             const text = e.target.result;
@@ -88,8 +112,22 @@ function ImportFile() {
             }
         };
         reader.readAsText(customerFile);
+        setCustomerLoading(false);
     };
 
+    const handleProductFile = (e) => {
+        const file = e.target.files[0];
+        setProductFile(file);
+        setProductLogs([]);
+        setProductErrors([]);
+    
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const errors = validateProductsCSV(ev.target.result);
+            setProductErrors(errors);
+        };
+        reader.readAsText(file);
+    };
 
     const toUrlKey = (name) =>
     name.toLowerCase().trim()
@@ -129,7 +167,7 @@ function ImportFile() {
 
     const importProducts = async () => {
         if (!productFile) return;
-
+        setProductLoading(true);
         const reader = new FileReader();
         reader.onload = async (e) => {
             const lines = e.target.result.split("\n");
@@ -195,6 +233,21 @@ function ImportFile() {
             }
         };
         reader.readAsText(productFile);
+        setProductLoading(false);
+    };
+
+    const handleOrderFile = (e) => {
+        const file = e.target.files[0];
+        setOrderFile(file);
+        setOrderLogs([]);
+        setOrderErrors([]);
+    
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const errors = validateOrdersCSV(ev.target.result);
+            setOrderErrors(errors);
+        };
+        reader.readAsText(file);
     };
 
     const parseAchat = (achat) => {
@@ -246,7 +299,6 @@ function ImportFile() {
             for (const row of rows) {
     
                 try {
-                    // ── 1. Trouver les credentials du customer ──────────
                     const creds = customerCredentials.find(
                         (c) => c.email === row.client
                     );
@@ -256,11 +308,9 @@ function ImportFile() {
                         continue;
                     }
     
-                    // ── 2. Login customer → token dans localStorage ─────
                     await loginCustomer(creds.email, creds.password);
                     console.log("Logged in as", creds.email);
     
-                    // ── 3. Ajouter les produits au panier ───────────────
                     for (const item of row.items) {
                         const product = await getProductBySku(item.sku);
                         if (!product) {
@@ -271,7 +321,6 @@ function ImportFile() {
                         console.log(`Added to cart: ${item.sku} x${item.qty}`);
                     }
     
-                    // ── 4. Adresse en dur ───────────────────────────────
                     const address = {
                         billing: {
                             id: null,
@@ -308,19 +357,19 @@ function ImportFile() {
                     await saveAddress(address);
                     console.log("Address saved");
     
-                    // ── 5. Livraison + Paiement ─────────────────────────
                     await saveShipping("free_free");
                     console.log("Shipping saved");
     
                     await savePayment("cashondelivery");
                     console.log("Payment saved");
     
-                    // ── 6. Créer la commande ────────────────────────────
                     const orderData = await saveOrder();
                     const order     = orderData.data.order;
                     console.log("Order created", order.increment_id);
-    
-                    // ── 7. Si completed → ship + invoice ───────────────
+                    
+                    await updateOrderDate(order.id, row.date, row.heure);
+                    console.log("Date mise à jour :", row.date, row.heure);
+                    
                     if (row.status === "completed") {
                         await shipOrder(order);
                         console.log("Order shipped");
@@ -367,52 +416,54 @@ function ImportFile() {
                 />
 
                 <br />
+                <ValidationErrors errors={customerErrors} />
                 <button
-                    onClick={
-                        importCustomers
-                    }
+                    onClick={importCustomers}
+                    disabled={!customerFile || customerLoading || customerErrors.length > 0}
                 >
-                    Import Customers
+                    {customerLoading ? "Import en cours..." : "Import Customers"}
                 </button>
+
                 <hr />
 
                 <h2>Import Produits</h2>
                 <input
                     type="file"
                     accept=".csv"
-                    onChange={(e) => setProductFile(e.target.files[0])}
+                    onChange={handleProductFile}
                 />
                 <br />
-                <button onClick={importProducts}>
-                    Import Produits
+                <ValidationErrors errors={productErrors} />
+                <button
+                    onClick={importProducts}
+                    disabled={!productFile || productLoading || productErrors.length > 0}
+                >
+                    {productLoading ? "Import en cours..." : "Import Produits"}
                 </button>
 
 
                 <hr />
 
                 <h2>Import Commandes</h2>
-                <p style={{ color: "#666", fontSize: "0.9rem" }}>
+                {/* <p style={{ color: "#666", fontSize: "0.9rem" }}>
                     Format CSV attendu :{" "}
                     <code>date,heure,client,achat,status</code>
                     <br />
                     <small>• Le client doit avoir été importé dans la même session.</small>
                     <br />
                     <small>• status : <code>pending</code> ou <code>completed</code></small>
-                </p>
+                </p> */}
 
                 <input
                     type="file"
                     accept=".csv"
-                    onChange={(e) => {
-                        setOrderFile(e.target.files[0]);
-                        setOrderLogs([]);
-                    }}
+                    onChange={handleOrderFile}
                 />
                 <br />
+                <ValidationErrors errors={orderErrors} />
                 <button
                     onClick={importOrders}
-                    disabled={!orderFile || orderLoading}
-                    style={{ marginTop: "0.5rem" }}
+                    disabled={!orderFile || orderLoading || orderErrors.length > 0}
                 >
                     {orderLoading ? "Import en cours..." : "Import Commandes"}
                 </button>
@@ -435,7 +486,7 @@ function ImportFile() {
                                     {log.status === "success" ? "SUCEES" : "ERROR"} {log.label}
                                     {log.error && (
                                         <span style={{ fontSize: "0.85rem" }}>
-                                            {" "}— {log.error}
+                                            {" "} {log.error}
                                         </span>
                                     )}
                                 </li>

@@ -1,36 +1,36 @@
 import { useState } from "react";
 import MainLayout from "../layouts/MainLayout";
 import { loginCustomer } from "../services/authService";
-import Popup from "../components/Popup";
+// import Popup from "../components/Popup";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [popup, setPopup] = useState({
-        show: false,
-        message: "",
-        type: ""
-    });
-    const showPopup = (message, type) => {
-        setPopup({
-            show: true,
-            message,
-            type
-        });
-        setTimeout(() => {
-            setPopup({
-                show: false,
-                message: "",
-                type: ""
-            });
-            if (localStorage.getItem("token")) {
-                navigate("/panier");
-            }
-        }, 1500);
+    // const [popup, setPopup] = useState({
+    //     show: false,
+    //     message: "",
+    //     type: ""
+    // });
+    // const showPopup = (message, type) => {
+    //     setPopup({
+    //         show: true,
+    //         message,
+    //         type
+    //     });
+    //     setTimeout(() => {
+    //         setPopup({
+    //             show: false,
+    //             message: "",
+    //             type: ""
+    //         });
+    //         if (localStorage.getItem("token")) {
+    //             navigate("/panier");
+    //         }
+    //     }, 1500);
     
-    };
+    // };
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -44,16 +44,16 @@ function Login() {
                 "token",
                 data.token
             );
-            showPopup(
-                "Connexion réussie",
-                "success"
-            );
+            // showPopup(
+            //     "Connexion réussie",
+            //     "success"
+            // );
         } catch (error) {
             console.error(error);
-            showPopup(
-                "Email ou mot de passe incorrect",
-                "error"
-            );
+            // showPopup(
+            //     "Email ou mot de passe incorrect",
+            //     "error"
+            // );
         }
 
     };
