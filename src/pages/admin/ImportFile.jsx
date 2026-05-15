@@ -2,17 +2,37 @@ import { useState } from "react";
 import MainLayout from "../../layouts/admin/MainLayout";
 import {
     registerCustomer,
+    loginCustomer,
+    getProductBySku,
+    addToCartWithToken,
     getCategories,
     createCategory,
     createProductSkeleton,
     updateProductDetails,
     updateProductStock,
 } from "../../services/admin/importService";
+
+import {
+    saveAddress,
+    saveShipping,
+    savePayment,
+    saveOrder,
+} from "../../services/checkoutService";
+
+import {
+    shipOrder,
+    invoiceOrder,
+} from "../../services/admin/orderAdminService";
 function ImportFile() {
 
     const [customerFile, setCustomerFile] = useState(null);
-
+    const [customerCredentials, setCustomerCredentials] = useState([]);
     const [productFile, setProductFile] = useState(null);
+
+    // Commande
+    const [orderFile,    setOrderFile]    = useState(null);
+    const [orderLoading, setOrderLoading] = useState(false);
+    const [orderLogs,    setOrderLogs]    = useState([]);
 
     const handleCustomerFile = (e) => {
         setCustomerFile(
@@ -52,6 +72,15 @@ function ImportFile() {
                 try {
                     const data = await registerCustomer(customer);
                     console.log( "SUCCESS", data );
+
+                    setCustomerCredentials((prev) => [
+                        ...prev,
+                        {
+                            email:    customer.email,
+                            password: customer.password
+                        }
+                    ]);
+
                 } catch (error) {
                     console.log( "ERROR",customer.email );
                     console.log( error.response.data );
@@ -167,6 +196,157 @@ function ImportFile() {
         };
         reader.readAsText(productFile);
     };
+
+    const parseAchat = (achat) => {
+        const items = [];
+        const regex = /\[""\s*(.*?)\s*""\s*;\s*(\d+)\s*\]/g;
+        let match;
+        while ((match = regex.exec(achat)) !== null) {
+            items.push({
+                sku: match[1],
+                qty: parseInt(match[2])
+            });
+        }
+        return items;
+    };
+    
+    const parseOrdersCSV = (text) => {
+        const lines = text.split("\n");
+        return lines
+            .slice(1)
+            .filter((line) => line.trim() !== "")
+            .map((line) => {
+                const regex = /(".*?"|[^,]+)(?=,|$)/g;
+                const cols  = [];
+                let match;
+                while ((match = regex.exec(line)) !== null) {
+                    cols.push(match[1].replace(/^"|"$/g, "").trim());
+                }
+                const [date, heure, client, achat, status] = cols;
+                return {
+                    date,
+                    heure,
+                    client,
+                    items:  parseAchat(achat),
+                    status: status?.trim()
+                };
+            });
+    };
+
+    const importOrders = async () => {
+        if (!orderFile) return;
+        setOrderLoading(true);
+        setOrderLogs([]);
+    
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const logs  = [];
+            const rows  = parseOrdersCSV(e.target.result);
+    
+            for (const row of rows) {
+    
+                try {
+                    // ── 1. Trouver les credentials du customer ──────────
+                    const creds = customerCredentials.find(
+                        (c) => c.email === row.client
+                    );
+                    if (!creds) {
+                        logs.push({ status: "error", label: row.client, error: "Customer credentials non trouvés" });
+                        setOrderLogs([...logs]);
+                        continue;
+                    }
+    
+                    // ── 2. Login customer → token dans localStorage ─────
+                    await loginCustomer(creds.email, creds.password);
+                    console.log("Logged in as", creds.email);
+    
+                    // ── 3. Ajouter les produits au panier ───────────────
+                    for (const item of row.items) {
+                        const product = await getProductBySku(item.sku);
+                        if (!product) {
+                            console.log(`SKU ${item.sku} not found`);
+                            continue;
+                        }
+                        await addToCartWithToken(product.id, item.qty);
+                        console.log(`Added to cart: ${item.sku} x${item.qty}`);
+                    }
+    
+                    // ── 4. Adresse en dur ───────────────────────────────
+                    const address = {
+                        billing: {
+                            id: null,
+                            address: ["12 Rue de la Paix"],
+                            save_as_address: false,
+                            use_for_shipping: true,
+                            first_name: "John",
+                            last_name:  "Doe",
+                            email:      row.client,
+                            company_name: "",
+                            city:     "Paris",
+                            state:    "IDF",
+                            country:  "FR",
+                            postcode: "75001",
+                            phone:    "0600000000"
+                        },
+                        shipping: {
+                            id: null,
+                            address: ["12 Rue de la Paix"],
+                            save_as_address: false,
+                            use_for_shipping: true,
+                            first_name: "John",
+                            last_name:  "Doe",
+                            email:      row.client,
+                            company_name: "",
+                            city:     "Paris",
+                            state:    "IDF",
+                            country:  "FR",
+                            postcode: "75001",
+                            phone:    "0600000000"
+                        }
+                    };
+    
+                    await saveAddress(address);
+                    console.log("Address saved");
+    
+                    // ── 5. Livraison + Paiement ─────────────────────────
+                    await saveShipping("free_free");
+                    console.log("Shipping saved");
+    
+                    await savePayment("cashondelivery");
+                    console.log("Payment saved");
+    
+                    // ── 6. Créer la commande ────────────────────────────
+                    const orderData = await saveOrder();
+                    const order     = orderData.data.order;
+                    console.log("Order created", order.increment_id);
+    
+                    // ── 7. Si completed → ship + invoice ───────────────
+                    if (row.status === "completed") {
+                        await shipOrder(order);
+                        console.log("Order shipped");
+                        await invoiceOrder(order);
+                        console.log("Order invoiced");
+                    }
+    
+                    logs.push({
+                        status: "success",
+                        label:  `Commande ${order.increment_id} — ${row.client} (${row.status})`
+                    });
+    
+                } catch (error) {
+                    const msg = error.response?.data?.message ?? error.message;
+                    console.log("ERROR order:", msg, error.response?.data);
+                    logs.push({ status: "error", label: row.client, error: msg });
+                }
+    
+                setOrderLogs([...logs]);
+            }
+    
+            setOrderLoading(false);
+        };
+        reader.readAsText(orderFile);
+    };
+
     return (
         <MainLayout>
             <div>
@@ -206,6 +386,63 @@ function ImportFile() {
                 <button onClick={importProducts}>
                     Import Produits
                 </button>
+
+
+                <hr />
+
+                <h2>Import Commandes</h2>
+                <p style={{ color: "#666", fontSize: "0.9rem" }}>
+                    Format CSV attendu :{" "}
+                    <code>date,heure,client,achat,status</code>
+                    <br />
+                    <small>• Le client doit avoir été importé dans la même session.</small>
+                    <br />
+                    <small>• status : <code>pending</code> ou <code>completed</code></small>
+                </p>
+
+                <input
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => {
+                        setOrderFile(e.target.files[0]);
+                        setOrderLogs([]);
+                    }}
+                />
+                <br />
+                <button
+                    onClick={importOrders}
+                    disabled={!orderFile || orderLoading}
+                    style={{ marginTop: "0.5rem" }}
+                >
+                    {orderLoading ? "Import en cours..." : "Import Commandes"}
+                </button>
+
+                {orderLogs.length > 0 && (
+                    <>
+                        <p style={{ marginTop: "0.5rem" }}>
+                            Success{orderLogs.filter((l) => l.status === "success").length} /
+                            Error{orderLogs.filter((l) => l.status === "error").length}
+                        </p>
+                        <ul style={{ listStyle: "none", padding: 0 }}>
+                            {orderLogs.map((log, i) => (
+                                <li
+                                    key={i}
+                                    style={{
+                                        color: log.status === "success" ? "green" : "red",
+                                        marginBottom: "0.25rem"
+                                    }}
+                                >
+                                    {log.status === "success" ? "SUCEES" : "ERROR"} {log.label}
+                                    {log.error && (
+                                        <span style={{ fontSize: "0.85rem" }}>
+                                            {" "}— {log.error}
+                                        </span>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
             </div>
 
         </MainLayout>

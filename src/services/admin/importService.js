@@ -142,3 +142,33 @@ export const uploadProductImage = async (productId, product) => {
     );
     return res.data;
 };
+
+
+export const loginCustomer = async (email, password) => {
+    const response = await api.post("/customer/login", {
+        email,
+        password,
+        device_name: "react-app"
+    });
+    console.log("login response :", response.data);
+    localStorage.setItem("token", response.data.token);
+    console.log("token stocké :", localStorage.getItem("token"));
+};
+
+export const addToCartWithToken = async (productId, quantity) => {
+    const token = localStorage.getItem("token");
+    const response = await api.post(
+        `/customer/cart/add/${productId}`,
+        {
+            product_id: productId,
+            quantity,
+            is_buy_now: 0
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    );
+    return response.data;
+};
