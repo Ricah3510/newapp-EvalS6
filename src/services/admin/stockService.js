@@ -1,5 +1,8 @@
 // src/services/admin/stockService.js
+import { folder, forEach } from "jszip";
 import api from "../../api/axios";
+import {getOrdersAdmin} from "./orderAdminService";
+import {updateProductStock} from "./importService";
 
 // ── Customer par défaut ───────────────────────────────────────────────
 const DEFAULT_CUSTOMER = {
@@ -111,3 +114,44 @@ export const getStockDisponible = async (productId) => {
 
     return stock;
 };
+
+export const getCategoriePending = async () => {
+    const response = await getOrdersAdmin();
+    // const listeCommande = response.data;
+    // const commandes = [];
+    // listeCommande.forEach((commande) => {
+    //     if (commande.status === "pending") {
+    //         commandes.push(
+    //             commande
+    //         );
+    //     }
+    // });
+    // return commandes;
+    return response.data.filter((commande) => commande.status === "pending");
+};
+
+export const getStockPending = async (productId) => {
+    const commandesPending = await getCategoriePending();
+    let stockPending = 0;
+    commandesPending.forEach((commande) => {
+        const items = commande.items;
+        items.forEach((item)=>{
+            if (item.product_id == productId) {
+                stockPending+= item.qty_ordered
+            }
+        });
+    });
+    return stockPending;
+};
+
+export const stockReel = async (productId) => {
+    const stockDispo = await getStockDisponible(productId);
+    const stockPending = await getStockPending(productId);
+    const stockReel =  stockDispo + stockPending;
+    return stockReel;
+}
+
+export const updateStock = async (productId, stockReel, stockPlus) => {
+    const nouveauStock =Number(stockReel) + Number(stockPlus);
+    return await updateProductStock(productId, nouveauStock);
+}

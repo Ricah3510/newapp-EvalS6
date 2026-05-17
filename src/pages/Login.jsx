@@ -60,7 +60,7 @@ function Login() {
 
     return (
         <MainLayout>
-            {
+            {/* {
                 popup.show && (
                     <Popup
                         message={popup.message}
@@ -74,7 +74,7 @@ function Login() {
                         }
                     />
                 )
-            }
+            } */}
             <h1>Connexion</h1>
             <form onSubmit={handleSubmit}>
                 <div>

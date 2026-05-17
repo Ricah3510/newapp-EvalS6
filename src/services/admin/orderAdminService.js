@@ -3,7 +3,7 @@ from "../../api/axiosAdmin";
 
 export const getOrdersAdmin = async () => {
     const response = await apiAdmin.get(
-        "/sales/orders?sort=id&order=asc"
+        "/sales/orders?sort=id&order=asc&limit=1000"
     );
     return response.data;
 };

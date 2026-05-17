@@ -15,6 +15,10 @@ import AdminRoute from "./AdminRoute";
 import AdminOrders from "../pages/admin/AdminOrders";
 import Wishlist from "../pages/Wishlist";
 import ImportImages from "../pages/admin/ImportImage";
+import ProductAdmin from "../pages/admin/ProductAdmin";
+import ProductStock from "../pages/admin/ProductStock";
+
+
 const router = createBrowserRouter([
 
     {
@@ -108,6 +112,26 @@ const router = createBrowserRouter([
         element: (
             <AdminRoute>
                 <ImportImages />
+            </AdminRoute>
+        )
+    },
+
+    {
+        path: "/admin/product",
+    
+        element: (
+            <AdminRoute>
+                <ProductAdmin />
+            </AdminRoute>
+        )
+    },
+
+    {
+        path: "/admin/product-stock/:id",
+    
+        element: (
+            <AdminRoute>
+                <ProductStock />
             </AdminRoute>
         )
     },

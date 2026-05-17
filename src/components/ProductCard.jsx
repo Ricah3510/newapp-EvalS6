@@ -37,7 +37,7 @@ function ProductCard({ product }) {
             <h3>{product.name}</h3>
             <p>{product.formatted_price}</p>
             <Link to={`/product-fiche/${product.id}`}>
-                    Voir Plus
+                    Voir plus de details
             </Link>
         </div>
     );
