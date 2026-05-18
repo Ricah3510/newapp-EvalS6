@@ -28,7 +28,8 @@ import {
 import {
     validateCustomersCSV,
     validateProductsCSV,
-    validateOrdersCSV
+    validateOrdersCSV,
+    toMysqlDate
 } from "../../services/admin/validationService";
 import ValidationErrors from "../../components/admin/ValidationErrors";
 function ImportFile() {
@@ -217,8 +218,8 @@ function ImportFile() {
                     formData.append("categories[]",         categoryId);
                     formData.append("channels[]",           "1");
                     formData.append("weight", "200");
-                    formData.append("special_price_from", "2000/01/01");
-                    formData.append("special_price_to", "2000/01/01");
+                    formData.append("special_price_from", toMysqlDate("01/01/2000"));
+                    formData.append("special_price_to", toMysqlDate("01/02/2000"));
 
                     if (row.prix_promo && row.prix_promo !== "") {
                         formData.append("special_price", row.prix_promo);

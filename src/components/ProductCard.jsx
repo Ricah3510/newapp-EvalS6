@@ -17,7 +17,6 @@ function ProductCard({ product }) {
         } catch (error) {
             console.error(error);
         }
-    
     };
     return (
         <div className="product-card">

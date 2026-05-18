@@ -48,6 +48,7 @@ function Login() {
             //     "Connexion réussie",
             //     "success"
             // );
+            navigate("/");
         } catch (error) {
             console.error(error);
             // showPopup(

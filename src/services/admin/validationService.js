@@ -33,6 +33,11 @@ const isValidDate = (value) => {
     );
 };
 
+export const toMysqlDate = (ddmmyyyy) => {
+    const [day, month, year] = ddmmyyyy.split("/");
+    return `${year}-${month}-${day}`;
+};
+
 const isPositiveAmount = (value) => {
     if (value === undefined || value === null || value.trim() === "") return true;
     const num = parseFloat(value);
