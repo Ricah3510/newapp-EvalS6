@@ -8,3 +8,10 @@ export const getAdmin = async () => {
 
     return response.data;
 };
+
+export const getProductByIdAdmin = async (productId) => {
+    const response = await apiAdmin.get(
+        `/catalog/products/${productId}`
+    );
+    return response.data;
+};

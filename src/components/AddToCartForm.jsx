@@ -1,38 +1,43 @@
 import { useState } from "react";
 import { addToCart } from "../services/cartService";
+import "../styles/product-card.css";
 
 function AddToCartForm({ productId }) {
     const [quantity, setQuantity] = useState(1);
+    const [loading,  setLoading]  = useState(false);
+    const [added,    setAdded]    = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
-            const data = await addToCart(
-                productId,
-                quantity
-            );
-            console.log(data);
-            alert("Produit ajouté")
+            await addToCart(productId, quantity);
+            setAdded(true);
+            setTimeout(() => setAdded(false), 2000);
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className="add-to-cart-form" onSubmit={handleSubmit}>
             <input
                 type="number"
                 min="1"
                 value={quantity}
-                onChange={(e) =>
-                    setQuantity(e.target.value)
-                }
+                onChange={(e) => setQuantity(Number(e.target.value))}
             />
-            <button type="submit">
-                Ajouter au panier
+            <button
+                type="submit"
+                className="add-to-cart-btn"
+                disabled={loading}
+            >
+                {loading ? "..." : added ? "✓ Ajouté" : "Ajouter"}
             </button>
         </form>
     );
-
 }
 
 export default AddToCartForm;

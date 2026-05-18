@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../layouts/MainLayout";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
     getCart,
     updateCart,
     removeCartItem,
     clearCart
 } from "../services/cartService";
+import "../styles/home.css";
+import "../styles/panier.css";
 
 function Panier() {
     const navigate = useNavigate();
-    const [cart, setCart] = useState(null);
+    const [cart,    setCart]    = useState(null);
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         loadCart();
     }, []);
@@ -21,35 +25,20 @@ function Panier() {
             setCart(data.data);
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleQuantity = async (
-        itemId,
-        currentQty,
-        action
-    ) => {
-
-        let newQty =
-            action === "plus"
-                ? currentQty + 1
-                : currentQty - 1;
-
-        if (newQty < 1) {
-            return;
-        }
-
+    const handleQuantity = async (itemId, currentQty, action) => {
+        const newQty = action === "plus" ? currentQty + 1 : currentQty - 1;
+        if (newQty < 1) return;
         try {
-
-            await updateCart({
-                [itemId]: newQty
-            });
+            await updateCart({ [itemId]: newQty });
             loadCart();
-
         } catch (error) {
             console.error(error);
         }
-
     };
 
     const handleRemove = async (itemId) => {
@@ -59,7 +48,6 @@ function Panier() {
         } catch (error) {
             console.error(error);
         }
-
     };
 
     const handleClearCart = async () => {
@@ -69,124 +57,171 @@ function Panier() {
         } catch (error) {
             console.error(error);
         }
-
     };
 
-    if (!cart) {
-        
-        return(
+    // ── Chargement ────────────────────────────────────────────
+    if (loading) {
+        return (
             <MainLayout>
-                <h1>Panier Vide - Chargement</h1>
+                <div className="page">
+                    <div className="page-loading">
+                        <div className="spinner" />
+                        Chargement du panier...
+                    </div>
+                </div>
+            </MainLayout>
+        );
+    }
+
+    // ── Panier vide ───────────────────────────────────────────
+    if (!cart || !cart.items || cart.items.length === 0) {
+        return (
+            <MainLayout>
+                <div className="page">
+                    <div className="panier-empty">
+                        <span className="panier-empty-icon">🛒</span>
+                        <h2>Votre panier est vide</h2>
+                        <p>Découvrez nos produits et ajoutez-en à votre panier.</p>
+                        <Link to="/" className="btn btn--accent">
+                            Continuer mes achats
+                        </Link>
+                    </div>
+                </div>
             </MainLayout>
         );
     }
 
     return (
-
         <MainLayout>
+            <div className="page">
 
-            <h1>Mon Panier</h1>
-
-            <button onClick={handleClearCart}>
-                Vider panier
-            </button>
-
-            <hr />
-            {
-                cart.items.map((item) => (
-                    <div
-                        key={item.id}
-                        style={{
-                            border: "1px solid #ccc",
-                            padding: "10px",
-                            marginBottom: "10px"
-                        }}
-                    >
-
-                        <img
-                            src={
-                                item.product.base_image
-                                    .medium_image_url
-                            }
-                            width="120"
-                        />
-
-                        <h3>{item.name}</h3>
-
-                        <p>
-                            Prix :
-                            {" "}
-                            {item.formatted_price}
+                {/* Titre */}
+                <div className="panier-header">
+                    <div>
+                        <h1 className="page-title">Mon Panier</h1>
+                        <p className="page-subtitle">
+                            {cart.items_qty} article(s)
                         </p>
+                    </div>
+                    <button
+                        className="btn btn--danger"
+                        onClick={handleClearCart}
+                    >
+                        Vider le panier
+                    </button>
+                </div>
 
-                        <div>
+                <hr className="page-divider" />
 
-                            <button
-                                onClick={() =>
-                                    handleQuantity(
-                                        item.id,
-                                        item.quantity,
-                                        "minus"
-                                    )
-                                }
-                            >
-                                -
-                            </button>
+                <div className="panier-layout">
 
-                            <span
-                                style={{
-                                    margin: "0 10px"
-                                }}
-                            >
-                                {item.quantity}
-                            </span>
+                    {/* ── Liste articles ── */}
+                    <div>
+                        {cart.items.map((item) => (
+                            <div key={item.id} className="panier-item">
 
-                            <button
-                                onClick={() =>
-                                    handleQuantity(
-                                        item.id,
-                                        item.quantity,
-                                        "plus"
-                                    )
-                                }
-                            >
-                                +
-                            </button>
+                                {/* Image */}
+                                <img
+                                    src={item.product.base_image?.medium_image_url}
+                                    alt={item.name}
+                                />
 
-                        </div>
+                                {/* Info */}
+                                <div className="panier-item-info">
+                                    <h3>{item.name}</h3>
+                                    <p className="panier-item-price">
+                                        {item.formatted_price}
+                                    </p>
 
-                        <br />
+                                    {/* Quantité */}
+                                    <div className="qty-control">
+                                        <button
+                                            className="qty-btn"
+                                            disabled={item.quantity <= 1}
+                                            onClick={() => handleQuantity(item.id, item.quantity, "minus")}
+                                        >
+                                            −
+                                        </button>
+                                        <span className="qty-value">{item.quantity}</span>
+                                        <button
+                                            className="qty-btn"
+                                            onClick={() => handleQuantity(item.id, item.quantity, "plus")}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
 
-                        <button
-                            onClick={() =>
-                                handleRemove(item.id)
-                            }
-                        >
-                            Supprimer
-                        </button>
+                                    {/* Supprimer */}
+                                    <button
+                                        className="remove-btn"
+                                        onClick={() => handleRemove(item.id)}
+                                    >
+                                        Supprimer
+                                    </button>
+                                </div>
 
+                                {/* Total ligne */}
+                                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                                    <p style={{
+                                        fontWeight: 700,
+                                        fontSize:   "1rem",
+                                        color:      "var(--clr-charcoal)"
+                                    }}>
+                                        {item.formatted_total}
+                                    </p>
+                                </div>
+
+                            </div>
+                        ))}
                     </div>
 
-                ))
-            }
+                    {/* ── Récap ── */}
+                    <div className="panier-summary">
+                        <h2>Récapitulatif</h2>
 
-            <hr />
+                        <div className="panier-summary-row">
+                            <span>Sous-total</span>
+                            <span>{cart.formatted_sub_total}</span>
+                        </div>
 
-            <h2>
-                Total :
-                {" "}
-                {cart.formatted_grand_total}
-            </h2>
-            <button
-                onClick={() => navigate("/checkout")}
-            >
-                Valider panier
-            </button>
+                        <div className="panier-summary-row">
+                            <span>Livraison</span>
+                            <span>Gratuite</span>
+                        </div>
 
+                        {cart.discount_amount > 0 && (
+                            <div className="panier-summary-row">
+                                <span>Remise</span>
+                                <span>− {cart.formatted_discount}</span>
+                            </div>
+                        )}
+
+                        <div className="panier-summary-row total">
+                            <span>Total</span>
+                            <span>{cart.formatted_grand_total}</span>
+                        </div>
+
+                        <button
+                            className="btn btn--accent"
+                            style={{ width: "100%", marginTop: "0.5rem" }}
+                            onClick={() => navigate("/checkout")}
+                        >
+                            Commander →
+                        </button>
+
+                        <Link
+                            to="/"
+                            className="btn"
+                            style={{ width: "100%", textAlign: "center", textDecoration: "none" }}
+                        >
+                            Continuer mes achats
+                        </Link>
+                    </div>
+
+                </div>
+            </div>
         </MainLayout>
-
     );
-
 }
 
 export default Panier;

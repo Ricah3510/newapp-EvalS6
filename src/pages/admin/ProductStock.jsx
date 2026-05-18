@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import MainLayout from "../../layouts/admin/MainLayout";
+import { getProductByIdAdmin } from "../../services/admin/adminService";
 import { getProductById } from "../../services/productService";
-import { getStockDetails, getStockDisponible, getStockPending } from "../../services/admin/stockService";
+
+// import { getStockDetails, getStockDisponible, getStockPending } from "../../services/admin/stockService";
 import AjouterStock from "../../components/admin/AjouterStock";
 function ProductStock() {
     const [product, setProduct] = useState(null);
@@ -26,10 +28,10 @@ function ProductStock() {
             // console.log("Stock en attente de livraison fini");
             // setStockReel( qty + qtyPending );
 
-            const responseStock = await getStockDetails(id);
-            setStockDispo(responseStock.stock_disponible);
-            setStockPending(responseStock.stock_pending);
-            setStockReel(responseStock.stock_reel);
+            // const responseStock = await getProductByIdAdmin(id);
+            setStockDispo(response.data.inventory_indices[0].qty);
+            setStockReel(response.data.inventories[0].qty);
+            setStockPending(response.data.inventories[0].qty - response.data.inventory_indices[0].qty);
         } catch (error) {
             console.error(error);
         }

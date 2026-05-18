@@ -3,6 +3,8 @@ import api from "../../api/axios";
 import {getOrdersAdmin} from "./orderAdminService";
 import {updateProductStock} from "./importService";
 import nodeApi from "../../api/axiosNode";
+import { getProductByIdAdmin } from "./adminService";
+
 
 const DEFAULT_CUSTOMER = {
     email:      "stock.checker@system.com",
@@ -155,7 +157,7 @@ export const getStockReel = async (productId) => {
     return res.data.stock_reel;
 };
 
-export const getStockDisponible = async (productId) => {
+export const getStockDisponible1 = async (productId) => {
     const res = await nodeApi.get(`/inventory/${productId}/disponible`);
     return res.data.stock_disponible;
 };
@@ -163,4 +165,9 @@ export const getStockDisponible = async (productId) => {
 export const getStockDetails = async (productId) => {
     const res = await nodeApi.get(`/inventory/${productId}`);
     return res.data;
+};
+
+export const getStockDisponible = async (productId) => {
+    const res = await getProductByIdAdmin(productId);
+    return res.data.inventory_indices[0].qty;
 };

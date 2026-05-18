@@ -1,19 +1,54 @@
+// src/components/admin/Header.jsx (back)
 import "../../styles/header.css";
-import { Link } from "react-router-dom";
-function Header() {
+import { NavLink } from "react-router-dom";
 
+function Header() {
     return (
-        <header className="header">
-            <Link to={`/admin`}> <h2> NewApp - Admin</h2> </Link>
+        <header className="header header--admin">
+
+            <NavLink to="/admin">
+                <h2>New<span>App</span> — Admin</h2>
+            </NavLink>
+
             <nav>
-                <Link to="/admin/orders">Commande</Link>
-                <Link to="/admin/product">Stock</Link>
-                <Link to="/admin/import-file">ImportFile</Link>
-                <Link to="/admin/import-image">ImportImage</Link>
-                <Link to="/admin/reset-data">ResetData</Link>
+                <NavLink
+                    to="/admin/orders"
+                    className={({ isActive }) => isActive ? "active" : ""}
+                >
+                    Commandes
+                </NavLink>
+
+                <NavLink
+                    to="/admin/stock"
+                    className={({ isActive }) => isActive ? "active" : ""}
+                >
+                    Stock
+                </NavLink>
+
+                <NavLink
+                    to="/admin/import-file"
+                    className={({ isActive }) => isActive ? "active" : ""}
+                >
+                    Import File
+                </NavLink>
+
+                <NavLink
+                    to="/admin/import-image"
+                    className={({ isActive }) => isActive ? "active" : ""}
+                >
+                    Import Images
+                </NavLink>
+
+                <NavLink
+                    to="/admin/reset-data"
+                    className={({ isActive }) => isActive ? "active" : ""}
+                >
+                    Reset Data
+                </NavLink>
             </nav>
+
         </header>
-    
     );
 }
+
 export default Header;
