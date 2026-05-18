@@ -217,6 +217,9 @@ function ImportFile() {
                     formData.append("categories[]",         categoryId);
                     formData.append("channels[]",           "1");
                     formData.append("weight", "200");
+                    formData.append("special_price_from", "2000/01/01");
+                    formData.append("special_price_to", "2000/01/01");
+
                     if (row.prix_promo && row.prix_promo !== "") {
                         formData.append("special_price", row.prix_promo);
                     }

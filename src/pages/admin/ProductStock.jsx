@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import MainLayout from "../../layouts/admin/MainLayout";
 import { getProductById } from "../../services/productService";
-import { getStockDisponible, getStockPending } from "../../services/admin/stockService";
+import { getStockDetails, getStockDisponible, getStockPending } from "../../services/admin/stockService";
 import AjouterStock from "../../components/admin/AjouterStock";
 function ProductStock() {
     const [product, setProduct] = useState(null);
@@ -18,14 +18,18 @@ function ProductStock() {
             const response = await getProductById(id);
             setProduct(response.data);
 
-            const qty = await getStockDisponible(response.data.id);
-            setStockDispo(qty);
-            console.log("Stock dispo pour client fini");
-            const qtyPending = await getStockPending(response.data.id);
-            setStockPending(qtyPending);
-            console.log("Stock en attente de livraison fini");
+            // const qty = await getStockDisponible(response.data.id);
+            // setStockDispo(qty);
+            // console.log("Stock dispo pour client fini");
+            // const qtyPending = await getStockPending(response.data.id);
+            // setStockPending(qtyPending);
+            // console.log("Stock en attente de livraison fini");
+            // setStockReel( qty + qtyPending );
 
-            setStockReel( qty + qtyPending );
+            const responseStock = await getStockDetails(id);
+            setStockDispo(responseStock.stock_disponible);
+            setStockPending(responseStock.stock_pending);
+            setStockReel(responseStock.stock_reel);
         } catch (error) {
             console.error(error);
         }

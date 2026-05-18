@@ -16,7 +16,7 @@ function ProductFiche() {
             const data = await getProductById(id);
             setProduct(data.data);
 
-            const qty = await getStockDisponible(data.data.id);
+            const qty = await getStockDisponible(id);
             setStock(qty);
         } catch (error) {
             console.error(error);

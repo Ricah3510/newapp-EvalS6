@@ -128,7 +128,9 @@ export const uploadProductImage = async (productId, product) => {
     formData.append("guest_checkout",       "1");
     formData.append("manage_stock",         "1");
     formData.append("channels[]",           "1");
-
+    formData.append("special_price", product.special_price?? "0");
+    formData.append("special_price_from", product.special_price_from);
+    formData.append("special_price_to", product.special_price_to);
     if (categoryId) {
         formData.append("categories[]", categoryId);
     }

@@ -1,10 +1,9 @@
-// src/services/admin/stockService.js
 import { folder, forEach } from "jszip";
 import api from "../../api/axios";
 import {getOrdersAdmin} from "./orderAdminService";
 import {updateProductStock} from "./importService";
+import nodeApi from "../../api/axiosNode";
 
-// ── Customer par défaut ───────────────────────────────────────────────
 const DEFAULT_CUSTOMER = {
     email:      "stock.checker@system.com",
     password:   "StockChecker123!",
@@ -23,7 +22,6 @@ const getDefaultCustomerToken = async () => {
         });
         return res.data.token;
     } catch {
-        // N'existe pas → créer
         await api.post("/customer/register", {
             first_name:            DEFAULT_CUSTOMER.first_name,
             last_name:             DEFAULT_CUSTOMER.last_name,
@@ -40,7 +38,6 @@ const getDefaultCustomerToken = async () => {
     }
 };
 
-// ── Vider le panier ───────────────────────────────────────────────────
 const clearDefaultCart = async (token) => {
     try {
         await api.delete("/customer/cart/remove", {
@@ -51,8 +48,7 @@ const clearDefaultCart = async (token) => {
     }
 };
 
-// ── Tester une quantité ───────────────────────────────────────────────
-// Retourne true si la quantité est disponible, false sinon
+
 const testQty = async (productId, qty, token) => {
     try {
         await clearDefaultCart(token);
@@ -74,11 +70,9 @@ const testQty = async (productId, qty, token) => {
     }
 };
 
-// ── Binary Search ─────────────────────────────────────────────────────
-export const getStockDisponible = async (productId) => {
+export const getStockDisponible0 = async (productId) => {
     const token = await getDefaultCustomerToken();
 
-    // Vérifier d'abord si stock = 0
     const hasStock = await testQty(productId, 1, token);
     if (!hasStock) {
         await clearDefaultCart(token);
@@ -155,3 +149,18 @@ export const updateStock = async (productId, stockReel, stockPlus) => {
     const nouveauStock =Number(stockReel) + Number(stockPlus);
     return await updateProductStock(productId, nouveauStock);
 }
+
+export const getStockReel = async (productId) => {
+    const res = await nodeApi.get(`/inventory/${productId}/reel`);
+    return res.data.stock_reel;
+};
+
+export const getStockDisponible = async (productId) => {
+    const res = await nodeApi.get(`/inventory/${productId}/disponible`);
+    return res.data.stock_disponible;
+};
+
+export const getStockDetails = async (productId) => {
+    const res = await nodeApi.get(`/inventory/${productId}`);
+    return res.data;
+};
