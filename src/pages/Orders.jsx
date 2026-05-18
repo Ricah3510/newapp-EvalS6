@@ -1,82 +1,107 @@
 import { useEffect, useState } from "react";
-
+import { Link } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
-
 import { getOrders } from "../services/orderService";
+import "../styles/home.css";
+import "../styles/orders.css";
+
+const StatusBadge = ({ status }) => {
+    const map = {
+        pending:    "pending",
+        processing: "processing",
+        completed:  "completed",
+        canceled:   "canceled",
+    };
+    const labels = {
+        pending:    "En attente",
+        processing: "En cours",
+        completed:  "Livré",
+        canceled:   "Annulé",
+    };
+    return (
+        <span className={`order-status`}>
+            {labels[status] ?? status}
+        </span>
+    );
+};
 
 function Orders() {
-    const [orders, setOrders] = useState([]);
+    const [orders,  setOrders]  = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadOrders();
     }, []);
 
     const loadOrders = async () => {
+        setLoading(true);
         try {
             const data = await getOrders();
-            console.log(data);
             setOrders(data.data);
-
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
         }
-
     };
 
     return (
-
         <MainLayout>
-            <h1>Mes Commandes</h1>
-            {
-                orders.map((order) => (
+            <div className="page">
 
-                    <div
-                        key={order.id}
-                        style={{
-                            border: "1px solid #ccc",
-                            padding: "15px",
-                            marginBottom: "15px"
-                        }}
-                    >
+                <h1 className="page-title">Mes Commandes</h1>
+                <p className="page-subtitle">
+                    {loading ? "Chargement..." : `${orders.length} commande(s)`}
+                </p>
+                <hr className="page-divider" />
 
-                        <h3>
-                            Commande :
-                            {" "}
-                            {order.increment_id}
-                        </h3>
-
-                        <p>
-                            Status :
-                            {" "}
-                            {order.status}
-                        </p>
-
-                        <p>
-                            Total :
-                            {" "}
-                            {order.formatted_grand_total}
-                        </p>
-
-                        <p>
-                            Date :
-                            {" "}
-
-                            {
-                                new Date(order.created_at)
-                                    .toLocaleString("fr-FR")
-                            }
-
-                        </p>
-
+                {loading && (
+                    <div className="page-loading">
+                        <div className="spinner" />
+                        Chargement des commandes...
                     </div>
+                )}
 
-                ))
-            }
+                {!loading && orders.length === 0 && (
+                    <div className="orders-empty">
+                        <span className="orders-empty-icon"></span>
+                        <h2>Aucune commande</h2>
+                        <p>Vous n'avez pas encore passé de commande.</p>
+                        <Link to="/" className="btn btn--accent">
+                            Découvrir nos produits
+                        </Link>
+                    </div>
+                )}
 
+                {!loading && orders.length > 0 && (
+                    <div className="orders-list">
+                        {orders.map((order) => (
+                            <div key={order.id} className="order-card">
+
+                                <div className="order-card-info">
+                                    <span className="order-ref">
+                                        Commande #{order.increment_id}
+                                    </span>
+                                    <span className="order-date">
+                                        {new Date(order.created_at).toLocaleString("fr-FR")}
+                                    </span>
+                                    <StatusBadge status={order.status} />
+                                </div>
+
+                                <div className="order-card-total">
+                                    <p className="order-total">
+                                        {order.formatted_grand_total}
+                                    </p>
+                                </div>
+
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+            </div>
         </MainLayout>
-
     );
-
 }
 
 export default Orders;

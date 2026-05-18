@@ -3,16 +3,20 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { toggleWishlist } from "../services/wishlistService";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { useWishlist } from "../context/WishlistContext";
 
 function ProductCard({ product }) {
-    const [isWishlist, setIsWishlist] = useState(product.is_saved);
-    const [loading,    setLoading]    = useState(false);
+    const { wishlistIds, toggle } = useWishlist();
+    const [loading, setLoading]   = useState(false);
+
+    // ← vérification depuis le contexte global
+    const isWishlist = wishlistIds.includes(product.id);
 
     const handleWishlist = async () => {
         setLoading(true);
         try {
             await toggleWishlist(product.id);
-            setIsWishlist(!isWishlist);
+            toggle(product.id); // ← met à jour le contexte
         } catch (error) {
             console.error(error);
         } finally {
@@ -22,7 +26,6 @@ function ProductCard({ product }) {
 
     return (
         <>
-            {/* Bouton wishlist */}
             <button
                 className={`wishlist-btn ${isWishlist ? "active" : ""}`}
                 onClick={handleWishlist}
@@ -32,13 +35,11 @@ function ProductCard({ product }) {
                 {isWishlist ? <FaHeart /> : <FaRegHeart />}
             </button>
 
-            {/* Image */}
             <img
                 src={product.base_image?.medium_image_url}
                 alt={product.name}
             />
 
-            {/* Contenu */}
             <div className="product-card-body">
                 <h3>{product.name}</h3>
                 <p className="product-card-price">{product.formatted_price}</p>

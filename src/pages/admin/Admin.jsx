@@ -28,7 +28,7 @@ function Admin() {
 
     const quickLinks = [
         { to: "/admin/orders",       icon: "", label: "Commandes"    },
-        { to: "/admin/product",      icon: "", label: "Stock"        },
+        { to: "/admin/stock",      icon: "", label: "Stock"        },
         { to: "/admin/import-file",  icon: "", label: "Import File"  },
         { to: "/admin/import-image", icon: "",  label: "Import Images"},
         { to: "/admin/reset-data",   icon: "",  label: "Reset Data"  },

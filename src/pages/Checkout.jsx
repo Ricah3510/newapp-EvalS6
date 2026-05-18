@@ -1,5 +1,6 @@
 import { useState } from "react";
 import MainLayout from "../layouts/MainLayout";
+import "../styles/checkout.css";
 import {
     saveAddress,
     saveShipping,
@@ -146,187 +147,216 @@ function Checkout() {
         }
     
     };
+    // return (
+
+    //     <MainLayout>
+    //         <h1>Checkout</h1>
+    //         <form onSubmit={handleSubmit}>
+    //             <input
+    //                 type="text"
+    //                 name="first_name"
+    //                 placeholder="Prenom"
+    //                 onChange={handleChange}
+    //             />
+
+    //             <input
+    //                 type="text"
+    //                 name="last_name"
+    //                 placeholder="Nom"
+    //                 onChange={handleChange}
+    //             />
+
+    //             <input
+    //                 type="email"
+    //                 name="email"
+    //                 placeholder="Email"
+    //                 onChange={handleChange}
+    //             />
+
+    //             <input
+    //                 type="text"
+    //                 name="phone"
+    //                 placeholder="Telephone"
+    //                 onChange={handleChange}
+    //             />
+
+    //             <input
+    //                 type="text"
+    //                 name="address"
+    //                 placeholder="Adresse"
+    //                 onChange={handleChange}
+    //             />
+
+    //             <input
+    //                 type="text"
+    //                 name="city"
+    //                 placeholder="Ville"
+    //                 onChange={handleChange}
+    //             />
+
+    //             <input
+    //                 type="text"
+    //                 name="state"
+    //                 placeholder="Etat"
+    //                 onChange={handleChange}
+    //             />
+
+    //             <input
+    //                 type="text"
+    //                 name="postcode"
+    //                 placeholder="Code postal"
+    //                 onChange={handleChange}
+    //             />
+    //             <p>Livraison : Gratuit</p>
+
+    //             <p>Paiement : Cash On Delivery</p>
+    //             <button type="submit">
+    //                 Valider l'adress
+    //             </button>
+
+    //         </form>
+
+    //     <button
+    //         onClick={handleSaveOrder}
+    //     >
+    //         Confirmer Commande
+    //     </button>
+    //     {
+    //         order && (
+
+    //             <div>
+    //                 <h2>
+    //                     Commande créée !
+    //                 </h2>
+    //                 <p>
+    //                     Numero :
+    //                     {" "}
+    //                     {order.data.increment_id}
+    //                 </p>
+    //                 <p>
+    //                     Total :
+    //                     {" "}
+    //                     {order.data.formatted_grand_total}
+    //                 </p>
+    //             </div>
+
+    //         )
+    //     }
+    //     </MainLayout>
+
+    // );
     return (
-
         <MainLayout>
-            <h1>Checkout</h1>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    name="first_name"
-                    placeholder="Prenom"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="text"
-                    name="last_name"
-                    placeholder="Nom"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="text"
-                    name="phone"
-                    placeholder="Telephone"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="text"
-                    name="address"
-                    placeholder="Adresse"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="text"
-                    name="city"
-                    placeholder="Ville"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="text"
-                    name="state"
-                    placeholder="Etat"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="text"
-                    name="postcode"
-                    placeholder="Code postal"
-                    onChange={handleChange}
-                />
-                <p>Livraison : Gratuit</p>
-
-                <p>Paiement : Cash On Delivery</p>
-                <button type="submit">
-                    Valider l'adress
-                </button>
-
-            </form>
-
-            {/* <h2>2-Livraison</h2>
-            {
-                rates.map((rate) => (
-                    <div
-                        key={rate.rates[0].method}
-                    >
+            <div className="page">
+                <h1 className="page-title">Checkout</h1>
+                <hr className="page-divider" />
+    
+                <div className="checkout-layout">
+                    <form onSubmit={handleSubmit} className="checkout-form">
                         <input
-                            type="radio"
-                            name="shipping"
-                            value={
-                                rate.rates[0].method
-                            }
-
-                            checked={
-                                selectedShipping
-                                === rate.rates[0].method
-                            }
-
-                            onChange={(e) =>
-                                setSelectedShipping(
-                                    e.target.value
-                                )
-                            }
+                            type="text"
+                            name="first_name"
+                            placeholder="Prénom"
+                            onChange={handleChange}
+                            required
                         />
-
-                        <span>
-
-                            {rate.carrier_title}
-
-                            {" - "}
-
-                            {
-                                rate.rates.formatted_price
-                            }
-
-                        </span>
-                    </div>
-
-                ))
-                
-            }
-            <button
-                onClick={handleSaveShipping}
-            >
-                Etape 2/3 OK
-            </button>
-
-            <h2>3 - Paiement</h2>
-            {
-                paymentMethods.map((payment) => (
-
-                    <div key={payment.method}>
-
+    
                         <input
-                            type="radio"
-
-                            value={payment.method}
-
-                            checked={
-                                selectedPayment
-                                === payment.method
-                            }
-
-                            onChange={(e) =>
-                                setSelectedPayment(
-                                    e.target.value
-                                )
-                            }
+                            type="text"
+                            name="last_name"
+                            placeholder="Nom"
+                            onChange={handleChange}
+                            required
                         />
-
-                        <span>
-                            {payment.method_title}
-                        </span>
-
+    
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            onChange={handleChange}
+                            required
+                        />
+    
+                        <input
+                            type="text"
+                            name="phone"
+                            placeholder="Téléphone"
+                            onChange={handleChange}
+                            required
+                        />
+    
+                        <input
+                            type="text"
+                            name="address"
+                            placeholder="Adresse"
+                            onChange={handleChange}
+                            required
+                        />
+    
+                        <input
+                            type="text"
+                            name="city"
+                            placeholder="Ville"
+                            onChange={handleChange}
+                            required
+                        />
+    
+                        <input
+                            type="text"
+                            name="state"
+                            placeholder="État / Région"
+                            onChange={handleChange}
+                        />
+    
+                        <input
+                            type="text"
+                            name="postcode"
+                            placeholder="Code postal"
+                            onChange={handleChange}
+                            required
+                        />
+    
+                        <button type="submit" className="btn form-full-width">
+                            Valider l'adresse
+                        </button>
+                    </form>
+    
+                    <div className="checkout-summary">
+                        <h3>Résumé de la commande</h3>
+                        
+                        <div className="checkout-info-row">
+                            <span>Livraison</span>
+                            <strong>Gratuit</strong>
+                        </div>
+    
+                        <div className="checkout-info-row">
+                            <span>Paiement</span>
+                            <strong>Cash On Delivery</strong>
+                        </div>
+    
+                        <button 
+                            onClick={handleSaveOrder}
+                            className="btn btn--accent"
+                            style={{ marginTop: '1rem', width: '100%' }}
+                        >
+                            Confirmer Commande
+                        </button>
+    
+                        {order && (
+                            <div className="order-success-card">
+                                <h2>Commande créée !</h2>
+                                <p>
+                                    {/* <strong>Numéro :</strong> {order.data.increment_id} */}
+                                </p>
+                                <p>
+                                    {/* <strong>Total :</strong> {order.data.formatted_grand_total} */}
+                                </p>
+                            </div>
+                        )}
                     </div>
-
-                ))
-            }
-            <button
-                onClick={handleSavePayment}
-            >
-                Confirmer Paiement
-            </button> */}
-
-        <button
-            onClick={handleSaveOrder}
-        >
-            Confirmer Commande
-        </button>
-        {
-            order && (
-
-                <div>
-                    <h2>
-                        Commande créée !
-                    </h2>
-                    <p>
-                        Numero :
-                        {" "}
-                        {order.increment_id}
-                    </p>
-                    <p>
-                        Total :
-                        {" "}
-                        {order.formatted_grand_total}
-                    </p>
                 </div>
-
-            )
-        }
+            </div>
         </MainLayout>
-
     );
 
 }

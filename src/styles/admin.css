@@ -1,0 +1,394 @@
+/* ═══════════════════════════════════════════════════════════════
+   admin.css — Styles Globaux du Back-office / Dashboard Admin
+   ═══════════════════════════════════════════════════════════════ */
+
+   :root {
+    /* --- Typographie Moderne (Locale & Hors-ligne) --- */
+    /* Le navigateur va tester l'ordre : d'abord Plus Jakarta Sans, puis les alternatives système si absent */
+    --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    /* --- Variables de design SaaS --- */
+    --clr-charcoal: #0f172a; /* Un gris-bleu très sombre (Slate 900), ultra moderne */
+    --clr-muted: #64748b;    /* Gris doux (Slate 500) pour les textes secondaires */
+    --clr-border: #e2e8f0;   /* Bordure fine et discrète (Slate 200) */
+    --radius: 8px;           /* Arrondis adoucis pour les cartes */
+}
+
+/* Application globale */
+body {
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: var(--clr-charcoal);
+    background-color: #f8fafc; /* Fond de page très légèrement teinté style Tailwind */
+}
+
+/* Ajustement des titres pour accentuer le look premium de Plus Jakarta Sans */
+h1, h2, h3, .page-title {
+    font-family: var(--font-body);
+    font-weight: 700;
+    letter-spacing: -0.025em; /* Un léger resserrement qui donne un effet "design pro" instantané */
+    color: var(--clr-charcoal);
+}
+
+/* Boutons de l'application */
+.btn {
+    font-family: var(--font-body);
+    font-weight: 600; /* Plus lisible et affirmé */
+    font-size: 0.875rem;
+    letter-spacing: -0.01em;
+}
+
+
+/* ── Conteneur de Tableaux de Données ────────────────────────── */
+.admin-table-container {
+    width: 100%;
+    overflow-x: auto;
+    background: #fff;
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius);
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 12px rgba(17, 17, 16, 0.01);
+}
+
+/* ── Tableaux Stylisés ───────────────────────────────────────── */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    text-align: left;
+    color: var(--clr-charcoal);
+}
+
+.admin-table th {
+    background-color: #111110;
+    color: #F5F3EF;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.25rem;
+    border-bottom: 2px solid var(--clr-accent);
+}
+
+.admin-table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1.5px solid var(--clr-border);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table tbody tr:hover td {
+    background-color: var(--clr-bg);
+}
+
+/* Colonne ID ou références importantes */
+.admin-table td.highlight {
+    font-weight: 600;
+    color: var(--clr-charcoal);
+}
+
+/* ── Badges de Statut & États ────────────────────────────────── */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border: 1.5px solid transparent;
+}
+
+.badge--success {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border-color: #C8E6C9;
+}
+
+.badge--pending {
+    background-color: #FFF3E0;
+    color: #EF6C00;
+    border-color: #FFE0B2;
+}
+
+.badge--info {
+    background-color: var(--clr-accent-lt);
+    color: var(--clr-accent);
+    border-color: rgba(184, 92, 56, 0.3);
+}
+
+/* ── Boutons d'action spécifiques aux tableaux ───────────────── */
+.btn-table-action {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.45rem 1rem;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--clr-charcoal);
+    background: transparent;
+    color: var(--clr-charcoal);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.btn-table-action:hover {
+    background: var(--clr-charcoal);
+    color: #fff;
+}
+
+.btn-table-action--accent {
+    border-color: var(--clr-accent);
+    color: var(--clr-accent);
+}
+
+.btn-table-action--accent:hover {
+    background: var(--clr-accent);
+    color: #fff;
+}
+
+/* ── Fiche Produit & Gestion du Stock ────────────────────────── */
+.admin-product-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2.5rem;
+    align-items: start;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 868px) {
+    .admin-product-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+/* Carte de présentation du produit */
+.admin-product-card {
+    background: #fff;
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-product-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: calc(var(--radius) - 2px);
+    background-color: var(--clr-bg);
+}
+
+.admin-product-price {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--clr-accent);
+}
+
+.admin-product-description {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--clr-muted);
+    line-height: 1.5;
+    border-top: 1.5px solid var(--clr-border);
+    padding-top: 1rem;
+}
+
+/* Section Données / Métriques de Stock */
+.admin-stock-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Grille de widgets / compteurs de stock */
+.stock-counters-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+@media (max-width: 576px) {
+    .stock-counters-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.stock-card {
+    background: #fff;
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stock-card .label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--clr-muted);
+}
+
+.stock-card .value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--clr-charcoal);
+}
+
+/* Variantes de couleurs subtiles pour les stocks */
+.stock-card--dispo { border-left: 4px solid #2E7D32; }
+.stock-card--pending { border-left: 4px solid #EF6C00; }
+.stock-card--reel { border-left: 4px solid var(--clr-charcoal); }
+
+/* ── Compléments pour la liste globale des stocks ────────────── */
+.admin-table-thumb {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: calc(var(--radius) - 4px);
+    background-color: var(--clr-bg);
+    border: 1px solid var(--clr-border);
+}
+
+.admin-cell-product {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ── Bloc d'ajustement rapide des stocks (AjouterStock) ──────── */
+.admin-stock-form-box {
+    background: var(--clr-bg);
+    border: 1.5px dashed var(--clr-border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+}
+
+.admin-stock-form-box h3 {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--clr-charcoal);
+    margin-bottom: 0.75rem;
+}
+
+.admin-input-group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.admin-input-group input[type="number"] {
+    width: 90px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    padding: 0.6rem;
+    background-color: #fff;
+    color: var(--clr-charcoal);
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius);
+    outline: none;
+    text-align: center;
+    transition: border-color var(--transition);
+}
+
+.admin-input-group input[type="number"]:focus {
+    border-color: var(--clr-charcoal);
+}
+
+/* On réutilise l'en-tête du bouton global en version adaptative */
+.admin-input-group .btn {
+    flex: 1;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* ── Section d'import de fichiers de données ────────────────── */
+.import-sections-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.import-card {
+    background: #fff;
+    border: 1.5px solid var(--clr-border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+}
+
+.import-card h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--clr-charcoal);
+}
+
+.import-card-desc {
+    font-size: 0.85rem;
+    color: var(--clr-muted);
+    margin-bottom: 1.25rem;
+    line-height: 1.4;
+}
+
+/* Zone d'upload stylisée */
+.import-file-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.import-file-input {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+}
+
+/* Terminal de logs et d'événements */
+.import-console-box {
+    margin-top: 1.25rem;
+    background: #1e1e1e;
+    border-radius: var(--radius);
+    padding: 1rem;
+    max-height: 250px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.8rem;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.import-console-header {
+    display: flex;
+    justify-content: space-between;
+    color: #aaa;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.import-log-item {
+    margin-bottom: 0.35rem;
+    line-height: 1.4;
+}
+.import-log-item.success { color: #4caf50; }
+.import-log-item.error { color: #f44336; }
+.import-log-item.info { color: #2196f3; }

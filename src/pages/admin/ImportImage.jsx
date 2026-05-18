@@ -2,12 +2,14 @@ import { useState } from "react";
 import JSZip from "jszip";
 import MainLayout from "../../layouts/admin/MainLayout";
 import { getProductBySku, uploadProductImage } from "../../services/admin/importService";
+import "../../styles/admin.css"; // Intégration de la feuille de style uniforme du back-office
+
 const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "gif"];
 
 function ImportImages() {
-    const [zipFile,      setZipFile]      = useState(null);
-    const [loading,      setLoading]      = useState(false);
-    const [logs,         setLogs]         = useState([]);
+    const [zipFile, setZipFile] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [logs, setLogs] = useState([]);
 
     const handleFileChange = (e) => {
         setZipFile(e.target.files[0]);
@@ -17,9 +19,9 @@ function ImportImages() {
     const importImages = async () => {
         if (!zipFile) return;
         setLoading(true);
-        setLogs([]);
+        setLogs([{ status: "info", label: "Initialisation", error: "Lecture et extraction de l'archive ZIP..." }]);
     
-        const logs = [];
+        const currentLogs = [];
     
         try {
             const zip   = await JSZip.loadAsync(zipFile);
@@ -47,8 +49,8 @@ function ImportImages() {
     
                 if (!product) {
                     console.log(`SKU ${sku} not found`);
-                    logs.push({ status: "skipped", label: filename, error: `SKU "${sku}" not found` });
-                    setLogs([...logs]);
+                    currentLogs.push({ status: "skipped", label: filename, error: `SKU "${sku}" introuvable` });
+                    setLogs([...currentLogs]);
                     continue;
                 }
     
@@ -68,18 +70,20 @@ function ImportImages() {
                     });
                     // ← DEBUG : voir la réponse
                     console.log("Réponse Bagisto :", result);
-                    logs.push({ status: "success", label: `${filename} → #${product.id}` });
+                    currentLogs.push({ status: "success", label: `${filename} → Produit #${product.id}` });
                 } catch (error) {
                     // ← DEBUG : voir l'erreur complète
                     console.log("Erreur upload :", error.response?.data);
-                    logs.push({ status: "error", label: filename, error: error.response?.data?.message ?? error.message });
+                    currentLogs.push({ status: "error", label: filename, error: error.response?.data?.message ?? error.message });
                 }
     
-                setLogs([...logs]);
+                setLogs([...currentLogs]);
             }
     
         } catch (error) {
             console.log("ZIP error:", error);
+            currentLogs.push({ status: "error", label: "Erreur Critique", error: "Le fichier ZIP semble corrompu ou illisible." });
+            setLogs([...currentLogs]);
         }
     
         setLoading(false);
@@ -93,69 +97,73 @@ function ImportImages() {
     // ── JSX ───────────────────────────────────────────────────────────
     return (
         <MainLayout>
-            <div>
-                <h1>Import Images</h1>
-                <hr />
+            <div className="page">
+                <h1 className="page-title">Import Images</h1>
+                <p className="page-subtitle">Rattachement de médias en masse via une archive compressée .zip</p>
+                <hr className="page-divider" />
 
-                <p style={{ color: "#666", fontSize: "0.9rem" }}>
-                    Importer un fichier <code>.zip</code> contenant les images nommées par SKU.
-                    <br />
-                    <strong>Exemple :</strong> <code>sk-l.jpg</code>, <code>sk-m.png</code>, <code>sk-s.jpeg</code>
-                    <br />
-                    <small>Extensions acceptées : jpg, jpeg, png, webp, gif</small>
-                </p>
-
-                <input
-                    type="file"
-                    accept=".zip"
-                    onChange={handleFileChange}
-                />
-
-                <br />
-
-                <button
-                    onClick={importImages}
-                    disabled={!zipFile || loading}
-                    style={{ marginTop: "0.5rem" }}
-                >
-                    {loading ? "Import en cours..." : "Import Images"}
-                </button>
-
-                {/* Compteurs */}
-                {logs.length > 0 && (
-                    <p style={{ marginTop: "1rem" }}>
-                        {countSuccess} importée(s) &nbsp;|&nbsp;
-                        {countSkipped} ignorée(s) &nbsp;|&nbsp;
-                        {countError} erreur(s)
+                <section className="import-card">
+                    <h2>Traitement de la galerie multimédia</h2>
+                    <p className="import-card-desc">
+                        Sélectionnez un fichier <code>.zip</code> contenant les images nommées strictement d'après le SKU cible.
+                        <br />
+                        <strong>Exemples attendus :</strong> <code>sk-l.jpg</code>, <code>sk-m.png</code>, <code>sk-s.webp</code>
+                        <br />
+                        <small style={{ color: "var(--clr-muted)" }}>Extensions acceptées : jpg, jpeg, png, webp, gif</small>
                     </p>
-                )}
 
-                {/* Logs ligne par ligne */}
-                <ul style={{ marginTop: "0.5rem", listStyle: "none", padding: 0 }}>
-                    {logs.map((log, i) => (
-                        <li
-                            key={i}
-                            style={{
-                                color:
-                                    log.status === "success" ? "green" :
-                                    log.status === "skipped" ? "orange" :
-                                    "red",
-                                marginBottom: "0.25rem",
-                            }}
+                    <div className="import-file-wrapper">
+                        <input
+                            type="file"
+                            accept=".zip"
+                            className="import-file-input"
+                            onChange={handleFileChange}
+                            disabled={loading}
+                        />
+                        <button
+                            onClick={importImages}
+                            className="btn btn--accent"
+                            disabled={!zipFile || loading}
                         >
-                            {log.status === "success" && ""}
-                            {log.status === "skipped" && ""}
-                            {log.status === "error"   && ""}
-                            &nbsp;{log.label}
-                            {log.error && (
-                                <span style={{ fontSize: "0.85rem" }}>
-                                    {" "}— {log.error}
-                                </span>
-                            )}
-                        </li>
-                    ))}
-                </ul>
+                            {loading ? "Importation en cours..." : "Lancer l'import images"}
+                        </button>
+                    </div>
 
+                    {/* Zone d'affichage des compteurs globaux */}
+                    {logs.length > 0 && (
+                        <div style={{ marginTop: "1.5rem" }}>
+                            <p style={{ fontWeight: "600", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
+                                Images associées : <span style={{ color: "green" }}>{countSuccess}</span> | 
+                                Ignorées : <span style={{ color: "orange" }}>{countSkipped}</span> | 
+                                Échecs : <span style={{ color: "red" }}>{countError}</span>
+                                {!loading && " 🏁 [MÉDIAS TRAITÉS]"}
+                            </p>
+
+                            {/* Console/Terminal de sortie de logs */}
+                            <div className="import-console-box">
+                                <div className="import-console-header">
+                                    <span>Console Pipeline Images</span>
+                                    <span>{loading ? "Flux actif" : "En attente"}</span>
+                                </div>
+                                {logs.map((log, i) => (
+                                    <div 
+                                        key={i} 
+                                        className={`import-log-item ${
+                                            log.status === "success" ? "success" : 
+                                            log.status === "skipped" ? "info" : "error"
+                                        }`}
+                                    >
+                                        {log.status === "success" && "[SUCCÈS] "}
+                                        {log.status === "skipped" && "[IGNORÉ] "}
+                                        {log.status === "error" && "[ÉCHEC] "}
+                                        {log.label}
+                                        {log.error && <span style={{ opacity: 0.8, fontSize: "0.8rem" }}> — {log.error}</span>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </section>
             </div>
         </MainLayout>
     );

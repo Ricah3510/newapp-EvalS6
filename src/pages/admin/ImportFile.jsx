@@ -32,24 +32,26 @@ import {
     toMysqlDate
 } from "../../services/admin/validationService";
 import ValidationErrors from "../../components/admin/ValidationErrors";
+import "../../styles/admin.css"; // Intégration de la feuille de style uniforme du back-office
+
 function ImportFile() {
 
     const [customerFile, setCustomerFile] = useState(null);
     const [customerCredentials, setCustomerCredentials] = useState([]);
     const [customerErrors, setCustomerErrors] = useState([]);
-    const [customerLoading,     setCustomerLoading]     = useState(false);
-    const [customerLogs,        setCustomerLogs]        = useState([]);
+    const [customerLoading, setCustomerLoading] = useState(false);
+    const [customerLogs, setCustomerLogs] = useState([]);
 
-    const [productFile,    setProductFile]    = useState(null);
+    const [productFile, setProductFile] = useState(null);
     const [productLoading, setProductLoading] = useState(false);
-    const [productLogs,    setProductLogs]    = useState([]);
-    const [productErrors,  setProductErrors]  = useState([]);
+    const [productLogs, setProductLogs] = useState([]);
+    const [productErrors, setProductErrors] = useState([]);
 
     // Commande
-    const [orderFile,    setOrderFile]    = useState(null);
+    const [orderFile, setOrderFile] = useState(null);
     const [orderLoading, setOrderLoading] = useState(false);
-    const [orderLogs,    setOrderLogs]    = useState([]);
-    const [orderErrors,    setOrderErrors]    = useState([]);
+    const [orderLogs, setOrderLogs] = useState([]);
+    const [orderErrors, setOrderErrors] = useState([]);
 
     const handleCustomerFile = (e) => {
         const file = e.target.files[0];
@@ -68,52 +70,63 @@ function ImportFile() {
     const importCustomers = async () => {
         if (!customerFile) return;
         setCustomerLoading(true);
+        setCustomerLogs([{ status: "info", text: "Début de l'analyse du fichier clients..." }]);
+        
         const reader = new FileReader();
         reader.onload = async (e) => {
             const text = e.target.result;
             const lines = text.split("\n");
-            const customers =
-                lines
+            const customers = lines
                 .slice(1)
                 .filter((line) => line.trim() !== "")
                 .map((line) => {
-                    const [
-                        nom,
-                        prenom,
-                        email,
-                        pwd
-                    ] = line.split(",");
-
+                    const [nom, prenom, email, pwd] = line.split(",");
                     return {
                         first_name: prenom.trim(),
                         last_name: nom.trim(),
-                        email:email.trim(),
+                        email: email.trim(),
                         password: pwd.trim(),
-                        password_confirmation:pwd.trim()
+                        password_confirmation: pwd.trim()
                     };
                 });
+
             console.log(customers);
+            const logs = [...customerLogs, { status: "info", text: `${customers.length} clients trouvés. Traitement lancé...` }];
+            setCustomerLogs(logs);
+
+            let successCount = 0;
+            let errorCount = 0;
+
             for (const customer of customers) {
                 try {
                     const data = await registerCustomer(customer);
-                    console.log( "SUCCESS", data );
+                    console.log("SUCCESS", data);
+                    successCount++;
 
                     setCustomerCredentials((prev) => [
                         ...prev,
                         {
-                            email:    customer.email,
+                            email: customer.email,
                             password: customer.password
                         }
                     ]);
 
+                    logs.push({ status: "success", text: `[SUCCÈS] Client inscrit : ${customer.email}` });
                 } catch (error) {
-                    console.log( "ERROR",customer.email );
-                    console.log( error.response.data );
+                    console.log("ERROR", customer.email);
+                    console.log(error.response?.data);
+                    errorCount++;
+                    logs.push({ status: "error", text: `[ERREUR] Échec pour ${customer.email} (${error.response?.data?.message || "Erreur serveur"})` });
                 }
+                setCustomerLogs([...logs]);
             }
+
+            // Signal de fin de traitement
+            logs.push({ status: "info", text: `🏁 IMPORT TERMINÉ — Succès: ${successCount} | Échecs: ${errorCount}` });
+            setCustomerLogs([...logs]);
+            setCustomerLoading(false);
         };
         reader.readAsText(customerFile);
-        setCustomerLoading(false);
     };
 
     const handleProductFile = (e) => {
@@ -131,16 +144,16 @@ function ImportFile() {
     };
 
     const toUrlKey = (name) =>
-    name.toLowerCase().trim()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-");
+        name.toLowerCase().trim()
+            .replace(/[^a-z0-9\s-]/g, "")
+            .replace(/\s+/g, "-");
 
     const categoryCache = {};
 
     const getOrCreateCategory = async (categoryName) => {
         if (categoryCache[categoryName]) return categoryCache[categoryName];
 
-        const res      = await getCategories();
+        const res = await getCategories();
         const existing = res.data?.find(
             (cat) => cat.name.toLowerCase() === categoryName.toLowerCase()
         );
@@ -151,15 +164,15 @@ function ImportFile() {
         }
 
         const formData = new FormData();
-        formData.append("locale",        "fr");
-        formData.append("name",          categoryName);
-        formData.append("slug",          toUrlKey(categoryName));
-        formData.append("status",        "1");
-        formData.append("position",      "1");
-        formData.append("display_mode",  "products_and_description");
-        formData.append("description",   categoryName);
-        formData.append("parent_id",     "1");
-        formData.append("attributes[]",  "9");
+        formData.append("locale", "fr");
+        formData.append("name", categoryName);
+        formData.append("slug", toUrlKey(categoryName));
+        formData.append("status", "1");
+        formData.append("position", "1");
+        formData.append("display_mode", "products_and_description");
+        formData.append("description", categoryName);
+        formData.append("parent_id", "1");
+        formData.append("attributes[]", "9");
 
         const created = await createCategory(formData);
         categoryCache[categoryName] = created.data.id;
@@ -169,26 +182,33 @@ function ImportFile() {
     const importProducts = async () => {
         if (!productFile) return;
         setProductLoading(true);
+        setProductLogs([{ status: "info", text: "Initialisation de l'import des articles..." }]);
+
         const reader = new FileReader();
         reader.onload = async (e) => {
             const lines = e.target.result.split("\n");
-            const rows  = lines
+            const rows = lines
                 .slice(1)
                 .filter((line) => line.trim() !== "")
                 .map((line) => {
-                    const [type, sku, name, Categorie, prix_vente, prix_achat, prix_promo, stock_initial] =
-                        line.split(",");
+                    const [type, sku, name, Categorie, prix_vente, prix_achat, prix_promo, stock_initial] = line.split(",");
                     return {
-                        type:          type?.trim() || "simple",
-                        sku:           sku?.trim(),
-                        name:          name?.trim(),
-                        Categorie:     Categorie?.trim(),
-                        prix_vente:    prix_vente?.trim(),
-                        prix_achat:    prix_achat?.trim(),
-                        prix_promo:    prix_promo?.trim(),
+                        type: type?.trim() || "simple",
+                        sku: sku?.trim(),
+                        name: name?.trim(),
+                        Categorie: Categorie?.trim(),
+                        prix_vente: prix_vente?.trim(),
+                        prix_achat: prix_achat?.trim(),
+                        prix_promo: prix_promo?.trim(),
                         stock_initial: stock_initial?.trim(),
                     };
                 });
+
+            const logs = [...productLogs, { status: "info", text: `${rows.length} lignes à intégrer.` }];
+            setProductLogs(logs);
+
+            let successCount = 0;
+            let errorCount = 0;
 
             for (const row of rows) {
                 try {
@@ -196,27 +216,27 @@ function ImportFile() {
                     const categoryId = await getOrCreateCategory(row.Categorie);
 
                     // Squelette produit
-                    const product   = await createProductSkeleton(row.type, row.sku);
+                    const product = await createProductSkeleton(row.type, row.sku);
                     const productId = product.data.id;
 
                     // Détails
                     const formData = new FormData();
-                    formData.append("_method",              "PUT");
-                    formData.append("channel",              "default");
-                    formData.append("locale",               "fr");
-                    formData.append("sku",                  row.sku);
-                    formData.append("name",                 row.name);
-                    formData.append("url_key",              toUrlKey(row.name));
-                    formData.append("short_description",    row.name);
-                    formData.append("description",          row.name);
-                    formData.append("price",                row.prix_vente);
-                    formData.append("cost",                 row.prix_achat);
-                    formData.append("status",               "1");
+                    formData.append("_method", "PUT");
+                    formData.append("channel", "default");
+                    formData.append("locale", "fr");
+                    formData.append("sku", row.sku);
+                    formData.append("name", row.name);
+                    formData.append("url_key", toUrlKey(row.name));
+                    formData.append("short_description", row.name);
+                    formData.append("description", row.name);
+                    formData.append("price", row.prix_vente);
+                    formData.append("cost", row.prix_achat);
+                    formData.append("status", "1");
                     formData.append("visible_individually", "1");
-                    formData.append("guest_checkout",       "1");
-                    formData.append("manage_stock",         "1");
-                    formData.append("categories[]",         categoryId);
-                    formData.append("channels[]",           "1");
+                    formData.append("guest_checkout", "1");
+                    formData.append("manage_stock", "1");
+                    formData.append("categories[]", categoryId);
+                    formData.append("channels[]", "1");
                     formData.append("weight", "200");
                     // formData.append("special_price_from", toMysqlDate("01/01/2000"));
                     // formData.append("special_price_to", toMysqlDate("01/02/2000"));
@@ -230,14 +250,23 @@ function ImportFile() {
                     await updateProductStock(productId, parseInt(row.stock_initial) || 0);
 
                     console.log("SUCCESS", row.sku);
+                    successCount++;
+                    logs.push({ status: "success", text: `[SUCCÈS] SKU: ${row.sku} — Produit créé et configuré.` });
                 } catch (error) {
                     console.log("ERROR", row.sku);
                     console.log(error.response?.data);
+                    errorCount++;
+                    logs.push({ status: "error", text: `[ERREUR] Échec SKU: ${row.sku} (${error.response?.data?.message || "Erreur de validation"})` });
                 }
+                setProductLogs([...logs]);
             }
+
+            // Signal de fin de traitement
+            logs.push({ status: "info", text: `IMPORT TERMINÉ — Articles créés: ${successCount} | Échecs: ${errorCount}` });
+            setProductLogs([...logs]);
+            setProductLoading(false);
         };
         reader.readAsText(productFile);
-        setProductLoading(false);
     };
 
     const handleOrderFile = (e) => {
@@ -274,7 +303,7 @@ function ImportFile() {
             .filter((line) => line.trim() !== "")
             .map((line) => {
                 const regex = /(".*?"|[^,]+)(?=,|$)/g;
-                const cols  = [];
+                const cols = [];
                 let match;
                 while ((match = regex.exec(line)) !== null) {
                     cols.push(match[1].replace(/^"|"$/g, "").trim());
@@ -284,7 +313,7 @@ function ImportFile() {
                     date,
                     heure,
                     client,
-                    items:  parseAchat(achat),
+                    items: parseAchat(achat),
                     status: status?.trim()
                 };
             });
@@ -293,15 +322,14 @@ function ImportFile() {
     const importOrders = async () => {
         if (!orderFile) return;
         setOrderLoading(true);
-        setOrderLogs([]);
+        setOrderLogs([{ status: "info", label: "Système", error: "Lancement de la routine d'injection des commandes..." }]);
     
         const reader = new FileReader();
         reader.onload = async (e) => {
-            const logs  = [];
-            const rows  = parseOrdersCSV(e.target.result);
+            const logs = [];
+            const rows = parseOrdersCSV(e.target.result);
     
             for (const row of rows) {
-    
                 try {
                     const creds = customerCredentials.find(
                         (c) => c.email === row.client
@@ -332,14 +360,14 @@ function ImportFile() {
                             save_as_address: false,
                             use_for_shipping: true,
                             first_name: "John",
-                            last_name:  "Doe",
-                            email:      row.client,
+                            last_name: "Doe",
+                            email: row.client,
                             company_name: "",
-                            city:     "Paris",
-                            state:    "IDF",
-                            country:  "FR",
+                            city: "Paris",
+                            state: "IDF",
+                            country: "FR",
                             postcode: "75001",
-                            phone:    "0600000000"
+                            phone: "0600000000"
                         },
                         shipping: {
                             id: null,
@@ -347,14 +375,14 @@ function ImportFile() {
                             save_as_address: false,
                             use_for_shipping: true,
                             first_name: "John",
-                            last_name:  "Doe",
-                            email:      row.client,
+                            last_name: "Doe",
+                            email: row.client,
                             company_name: "",
-                            city:     "Paris",
-                            state:    "IDF",
-                            country:  "FR",
+                            city: "Paris",
+                            state: "IDF",
+                            country: "FR",
                             postcode: "75001",
-                            phone:    "0600000000"
+                            phone: "0600000000"
                         }
                     };
     
@@ -368,7 +396,7 @@ function ImportFile() {
                     console.log("Payment saved");
     
                     const orderData = await saveOrder();
-                    const order     = orderData.data.order;
+                    const order = orderData.data.order;
                     console.log("Order created", order.increment_id);
                     
                     await updateOrderDate(order.id, row.date, row.heure);
@@ -383,7 +411,7 @@ function ImportFile() {
     
                     logs.push({
                         status: "success",
-                        label:  `Commande ${order.increment_id} — ${row.client} (${row.status})`
+                        label: `Commande ${order.increment_id} — ${row.client} (${row.status})`
                     });
     
                 } catch (error) {
@@ -394,7 +422,8 @@ function ImportFile() {
     
                 setOrderLogs([...logs]);
             }
-    
+            
+            // Signal de fin de traitement des commandes
             setOrderLoading(false);
         };
         reader.readAsText(orderFile);
@@ -402,107 +431,146 @@ function ImportFile() {
 
     return (
         <MainLayout>
-            <div>
-                <h1>
-                    Import de fichier
-                </h1>
-                <hr />
+            <div className="page">
+                <h1 className="page-title">Import de données</h1>
+                <p className="page-subtitle">Alimentation automatisée du catalogue via fichiers structurés CSV</p>
+                <hr className="page-divider" />
 
-                <h2>
-                    Import Customers
-                </h2>
-                <input
-                    type="file"
-                    accept=".csv"
-                    onChange={
-                        handleCustomerFile
-                    }
-                />
+                <div className="import-sections-grid">
+                    
+                    {/* MODULE 1 : CUSTOMERS */}
+                    <section className="import-card">
+                        <h2>Import Clients</h2>
+                        <p className="import-card-desc">Fichier requis : colonnes Nom, Prénom, Email, Mot de passe.</p>
+                        
+                        <div className="import-file-wrapper">
+                            <input
+                                type="file"
+                                accept=".csv"
+                                className="import-file-input"
+                                onChange={handleCustomerFile}
+                                disabled={customerLoading}
+                            />
+                            <button
+                                onClick={importCustomers}
+                                className="btn btn--accent"
+                                disabled={!customerFile || customerLoading || customerErrors.length > 0}
+                            >
+                                {customerLoading ? "Importation en cours..." : "Lancer l'import clients"}
+                            </button>
+                        </div>
 
-                <br />
-                <ValidationErrors errors={customerErrors} />
-                <button
-                    onClick={importCustomers}
-                    disabled={!customerFile || customerLoading || customerErrors.length > 0}
-                >
-                    {customerLoading ? "Import en cours..." : "Import Customers"}
-                </button>
+                        <ValidationErrors errors={customerErrors} />
 
-                <hr />
+                        {customerLogs.length > 0 && (
+                            <div className="import-console-box">
+                                <div className="import-console-header">
+                                    <span>Console Flux d'inscription</span>
+                                    <span>{customerLoading ? "Actif" : "Terminé"}</span>
+                                </div>
+                                {customerLogs.map((log, index) => (
+                                    <div key={index} className={`import-log-item ${log.status}`}>
+                                        {log.text}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
 
-                <h2>Import Produits</h2>
-                <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleProductFile}
-                />
-                <br />
-                <ValidationErrors errors={productErrors} />
-                <button
-                    onClick={importProducts}
-                    disabled={!productFile || productLoading || productErrors.length > 0}
-                >
-                    {productLoading ? "Import en cours..." : "Import Produits"}
-                </button>
+                    {/* MODULE 2 : PRODUCTS */}
+                    <section className="import-card">
+                        <h2>Import Produits</h2>
+                        <p className="import-card-desc">Fichier contenant la structure des prix, des stocks initiaux et des affectations de catégories.</p>
+                        
+                        <div className="import-file-wrapper">
+                            <input
+                                type="file"
+                                accept=".csv"
+                                className="import-file-input"
+                                onChange={handleProductFile}
+                                disabled={productLoading}
+                            />
+                            <button
+                                onClick={importProducts}
+                                className="btn btn--accent"
+                                disabled={!productFile || productLoading || productErrors.length > 0}
+                            >
+                                {productLoading ? "Importation en cours..." : "Lancer l'import produits"}
+                            </button>
+                        </div>
 
+                        <ValidationErrors errors={productErrors} />
 
-                <hr />
+                        {productLogs.length > 0 && (
+                            <div className="import-console-box">
+                                <div className="import-console-header">
+                                    <span>Console Indexation Articles</span>
+                                    <span>{productLoading ? "Actif" : "Terminé"}</span>
+                                </div>
+                                {productLogs.map((log, index) => (
+                                    <div key={index} className={`import-log-item ${log.status}`}>
+                                        {log.text}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
 
-                <h2>Import Commandes</h2>
-                {/* <p style={{ color: "#666", fontSize: "0.9rem" }}>
-                    Format CSV attendu :{" "}
-                    <code>date,heure,client,achat,status</code>
-                    <br />
-                    <small>• Le client doit avoir été importé dans la même session.</small>
-                    <br />
-                    <small>• status : <code>pending</code> ou <code>completed</code></small>
-                </p> */}
-
-                <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleOrderFile}
-                />
-                <br />
-                <ValidationErrors errors={orderErrors} />
-                <button
-                    onClick={importOrders}
-                    disabled={!orderFile || orderLoading || orderErrors.length > 0}
-                >
-                    {orderLoading ? "Import en cours..." : "Import Commandes"}
-                </button>
-
-                {orderLogs.length > 0 && (
-                    <>
-                        <p style={{ marginTop: "0.5rem" }}>
-                            Success{orderLogs.filter((l) => l.status === "success").length} /
-                            Error{orderLogs.filter((l) => l.status === "error").length}
+                    {/* MODULE 3 : ORDERS */}
+                    <section className="import-card">
+                        <h2>Import Commandes</h2>
+                        <p className="import-card-desc">
+                            Format CSV attendu : <code>date,heure,client,achat,status</code>. 
+                            Les comptes clients correspondants doivent être présents pour permettre l'authentification par jeton.
                         </p>
-                        <ul style={{ listStyle: "none", padding: 0 }}>
-                            {orderLogs.map((log, i) => (
-                                <li
-                                    key={i}
-                                    style={{
-                                        color: log.status === "success" ? "green" : "red",
-                                        marginBottom: "0.25rem"
-                                    }}
-                                >
-                                    {log.status === "success" ? "SUCEES" : "ERROR"} {log.label}
-                                    {log.error && (
-                                        <span style={{ fontSize: "0.85rem" }}>
-                                            {" "} {log.error}
-                                        </span>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </div>
+                        
+                        <div className="import-file-wrapper">
+                            <input
+                                type="file"
+                                accept=".csv"
+                                className="import-file-input"
+                                onChange={handleOrderFile}
+                                disabled={orderLoading}
+                            />
+                            <button
+                                onClick={importOrders}
+                                className="btn btn--accent"
+                                disabled={!orderFile || orderLoading || orderErrors.length > 0}
+                            >
+                                {orderLoading ? "Importation en cours..." : "Lancer l'import commandes"}
+                            </button>
+                        </div>
 
+                        <ValidationErrors errors={orderErrors} />
+
+                        {orderLogs.length > 0 && (
+                            <div className="import-card-result">
+                                <p style={{ marginTop: "0.5rem", fontWeight: "600", fontSize: "0.9rem" }}>
+                                    Succès : <span style={{ color: "green" }}>{orderLogs.filter((l) => l.status === "success").length}</span> | 
+                                    Échecs : <span style={{ color: "red" }}>{orderLogs.filter((l) => l.status === "error").length}</span>
+                                    {!orderLoading && "[TRAITEMENT INTEGRAL TERMINÉ]"}
+                                </p>
+                                
+                                <div className="import-console-box">
+                                    <div className="import-console-header">
+                                        <span>Console Pipeline Commandes</span>
+                                        <span>{orderLoading ? "En cours" : "Terminé"}</span>
+                                    </div>
+                                    {orderLogs.map((log, i) => (
+                                        <div key={i} className={`import-log-item ${log.status}`}>
+                                            {log.status === "success" ? "[SUCCÈS]" : "[ÉCHEC]"} {log.label}
+                                            {log.error && <span style={{ opacity: 0.85, fontSize: "0.8rem" }}> — {log.error}</span>}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </section>
+
+                </div>
+            </div>
         </MainLayout>
     );
-
 }
 
 export default ImportFile;

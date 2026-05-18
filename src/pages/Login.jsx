@@ -1,36 +1,14 @@
 import { useState } from "react";
 import MainLayout from "../layouts/MainLayout";
 import { loginCustomer } from "../services/authService";
-// import Popup from "../components/Popup";
 import { useNavigate } from "react-router-dom";
+import "../styles/login.css";
 
 function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    // const [popup, setPopup] = useState({
-    //     show: false,
-    //     message: "",
-    //     type: ""
-    // });
-    // const showPopup = (message, type) => {
-    //     setPopup({
-    //         show: true,
-    //         message,
-    //         type
-    //     });
-    //     setTimeout(() => {
-    //         setPopup({
-    //             show: false,
-    //             message: "",
-    //             type: ""
-    //         });
-    //         if (localStorage.getItem("token")) {
-    //             navigate("/panier");
-    //         }
-    //     }, 1500);
-    
-    // };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -40,71 +18,55 @@ function Login() {
                 device_name: "react-app"
             });
             console.log(data);
-            localStorage.setItem(
-                "token",
-                data.token
-            );
-            // showPopup(
-            //     "Connexion réussie",
-            //     "success"
-            // );
+            localStorage.setItem("token", data.token);
             navigate("/");
         } catch (error) {
             console.error(error);
-            // showPopup(
-            //     "Email ou mot de passe incorrect",
-            //     "error"
-            // );
         }
-
     };
 
     return (
         <MainLayout>
-            {/* {
-                popup.show && (
-                    <Popup
-                        message={popup.message}
-                        type={popup.type}
-                        onClose={() =>
-                            setPopup({
-                                show: false,
-                                message: "",
-                                type: ""
-                            })
-                        }
-                    />
-                )
-            } */}
-            <h1>Connexion</h1>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) =>
-                            setEmail(e.target.value)
-                        }
-                    />
+            <div className="page">
+                <div className="auth-container">
+                    <h1 className="page-title" style={{ fontSize: '2rem', textAlign: 'center' }}>
+                        Connexion
+                    </h1>
+                    <hr className="page-divider" style={{ margin: '0.75rem auto 1.5rem auto' }} />
+
+                    <form onSubmit={handleSubmit} className="auth-form">
+                        <div className="auth-form-group">
+                            <label>Email</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="votre@email.com"
+                                required
+                            />
+                        </div>
+
+                        <div className="auth-form-group">
+                            <label>Mot de passe</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            className="btn btn--accent"
+                            style={{ marginTop: '0.5rem', width: '100%' }}
+                        >
+                            Se connecter
+                        </button>
+                    </form>
                 </div>
-
-                <div>
-                    <label>Mot de passe</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) =>
-                            setPassword(e.target.value)
-                        }
-                    />
-                </div>
-
-                <button type="submit">
-                    Se connecter
-                </button>
-
-            </form>
+            </div>
         </MainLayout>
     );
 }
