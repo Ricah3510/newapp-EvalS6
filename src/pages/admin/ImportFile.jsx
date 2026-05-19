@@ -53,7 +53,7 @@ function ImportFile() {
     const [orderLogs, setOrderLogs] = useState([]);
     const [orderErrors, setOrderErrors] = useState([]);
 
-    const handleCustomerFile = (e) => {
+    const handleCustomerFile0 = (e) => {
         const file = e.target.files[0];
         setCustomerFile(file);
         setCustomerLogs([]);
@@ -63,6 +63,46 @@ function ImportFile() {
         reader.onload = (ev) => {
             const errors = validateCustomersCSV(ev.target.result);
             setCustomerErrors(errors);
+            // setCustomerCredentials((prev) => [
+            //     ...prev,
+            //     {
+            //         email: customer.email,
+            //         password: customer.password
+            //     }
+            // ]);
+        };
+        reader.readAsText(file);
+    };
+
+    const handleCustomerFile = (e) => {
+        const file = e.target.files[0];
+        setCustomerFile(file);
+        setCustomerLogs([]);
+        setCustomerErrors([]);
+        setCustomerCredentials([]);
+    
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const text = ev.target.result;
+    
+            const errors = validateCustomersCSV(text);
+            setCustomerErrors(errors);
+    
+            const lines = text.split("\n");
+            const creds = lines
+                .slice(1)
+                .filter((line) => line.trim() !== "")
+                .map((line) => {
+                    const [nom, prenom, email, pwd] = line.split(",");
+                    return {
+                        email:    email?.trim(),
+                        password: pwd?.trim()
+                    };
+                })
+                .filter((c) => c.email && c.password);
+    
+            setCustomerCredentials(creds);
+            console.log("Credentials chargés :", creds);
         };
         reader.readAsText(file);
     };
@@ -122,7 +162,7 @@ function ImportFile() {
             }
 
             // Signal de fin de traitement
-            logs.push({ status: "info", text: `🏁 IMPORT TERMINÉ — Succès: ${successCount} | Échecs: ${errorCount}` });
+            logs.push({ status: "info", text: `IMPORT TERMINÉ — Succès: ${successCount} | Échecs: ${errorCount}` });
             setCustomerLogs([...logs]);
             setCustomerLoading(false);
         };

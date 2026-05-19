@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../../layouts/admin/MainLayout";
-import { getProducts } from "../../services/productService";
+// import { getProducts } from "../../services/productService";
+import { getProducts } from "../../services/admin/adminService";
 import { Link } from "react-router-dom";
 import "../../styles/admin.css";
 
@@ -16,6 +17,7 @@ function Stock() {
         try {
             setLoading(true);
             const data = await getProducts();
+            console.log(data.data);
             setProducts(data.data);
         } catch (error) {
             console.error(error);

@@ -15,3 +15,8 @@ export const getProductByIdAdmin = async (productId) => {
     );
     return response.data;
 };
+
+export const getProducts = async () => {
+    const response = await apiAdmin.get("/catalog/products?limit=1000");
+    return response.data;
+};

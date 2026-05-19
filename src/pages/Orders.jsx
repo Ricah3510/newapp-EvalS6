@@ -13,10 +13,10 @@ const StatusBadge = ({ status }) => {
         canceled:   "canceled",
     };
     const labels = {
-        pending:    "En attente",
-        processing: "En cours",
-        completed:  "Livré",
-        canceled:   "Annulé",
+        pending:    "Pending",
+        processing: "Processing",
+        completed:  "Completed",
+        canceled:   "Canceled",
     };
     return (
         <span className={`order-status`}>

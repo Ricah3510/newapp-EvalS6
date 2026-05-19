@@ -38,9 +38,9 @@ function AdminOrders() {
 
     const handleInvoice = async (order) => {
         try {
-            if (order.shipments.length === 0) {
-                await shipOrder(order);
-            }
+            // if (order.shipments.length === 0) {
+            //     await shipOrder(order);
+            // }
             await invoiceOrder(order);
             loadOrders();
         } catch (error) {
@@ -85,7 +85,18 @@ function AdminOrders() {
                                             {order.customer_first_name} {order.customer_last_name}
                                         </td>
                                         <td>
-                                            <span className={`badge ${order.status === 'processing' ? 'badge--pending' : 'badge--success'}`}>
+                                            {/* <span className={`badge
+                                                    ${order.status === 'processing'
+                                                    ? 'badge--processing'
+                                                    : 'badge--success'}`
+                                                }> */}
+                                                <span className={`badge
+                                                    ${order.status === 'processing'
+                                                    ? 'badge--processing'
+                                                    : order.status === 'pending'
+                                                    ? 'badge--pending'
+                                                    : 'badge--success'}`
+                                                }>
                                                 {order.status}
                                             </span>
                                         </td>
