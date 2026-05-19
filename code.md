@@ -228,3 +228,66 @@ filteredOrders.map(...)
 //au lieu de
 ordres.map(...)
 ```
+
+
+## Formulaire
+```jsx
+import { useState }
+from "react";
+
+function MonFormulaire() {
+
+    const [nom, setNom] = useState("");
+
+    const [age, setAge] = useState("");
+
+    const [dateNaissance, setDateNaissance] = useState("");
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log(nom);
+        console.log(age);
+        console.log(dateNaissance);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} >
+            <input type="text" placeholder="Nom" value={nom}
+                onChange={(e) =>
+                    setNom(
+                        e.target.value
+                    )
+                }
+            />
+
+            <br />
+
+            <input type="number" placeholder="Age" value={age}
+                onChange={(e) =>
+                    setAge(
+                        e.target.value
+                    )
+                }
+            />
+
+            <br />
+
+            <inpu type="date" value={dateNaissance}
+                onChange={(e) =>
+                    setDateNaissance(
+                        e.target.value
+                    )
+                }
+            />
+
+            <br />
+
+            <button type="submit">
+                Envoyer
+            </button>
+        </form>
+    );
+}
+
+export default MonFormulaire;
+```

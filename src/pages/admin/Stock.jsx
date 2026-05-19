@@ -45,7 +45,9 @@ function Stock() {
                                 <tr>
                                     <th style={{ width: "100px" }}>ID</th>
                                     <th>Produit</th>
-                                    <th style={{ width: "150px", textAlign: "center" }}>En Stock</th>
+                                    <th style={{ width: "150px", textAlign: "center" }}>Stock Final</th>
+                                    <th style={{ width: "150px", textAlign: "center" }}>Livraison En Attente</th>
+                                    <th style={{ width: "150px", textAlign: "center" }}>Stock Disponible</th>
                                     <th style={{ width: "180px", textAlign: "right" }}>Action</th>
                                 </tr>
                             </thead>
@@ -53,6 +55,8 @@ function Stock() {
                                 {products.map((product) => {
                                     // Sécurité au cas où l'inventaire n'est pas encore synchronisé
                                     const stockQty = product.inventories?.[0]?.qty ?? 0;
+                                    const stockDispo = product.inventory_indices?.[0]?.qty ?? 0;
+                                    const stockPending = stockQty - stockDispo;
                                     const mainImage = product.base_image?.small_image_url || product.base_image?.large_image_url;
 
                                     return (
@@ -75,8 +79,18 @@ function Stock() {
                                                     {stockQty} unités
                                                 </span>
                                             </td>
+                                            <td style={{ textAlign: "center" }} >
+                                                <span className={`badge ${stockPending > 0 ? "badge--success" : "badge--pending"}`}>
+                                                    {stockPending}
+                                                </span>
+                                            </td>
+                                            <td style={{ textAlign: "center" }} >
+                                                <span className={`badge ${stockDispo > 0 ? "badge--success" : "badge--pending"}`}>
+                                                    {stockDispo} unités
+                                                </span>
+                                            </td>
                                             <td style={{ textAlign: "right" }}>
-                                                <Link 
+                                                <Link
                                                     to={`/admin/product-stock/${product.id}`}
                                                     className="btn-table-action"
                                                     style={{ textDecoration: "none", display: "inline-block" }}

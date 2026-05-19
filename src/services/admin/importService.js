@@ -109,7 +109,7 @@ export const uploadProductImage = async (productId, product) => {
             .replace(/[^a-z0-9\s-]/g, "")
             .replace(/\s+/g, "-");
 
-    const categoryId = await getCategoryByProductSku(product.sku);
+    // const categoryId = await getCategoryByProductSku(product.sku);
 
     const formData = new FormData();
     formData.append("_method",              "PUT");

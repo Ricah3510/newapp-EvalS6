@@ -368,7 +368,6 @@ function ImportFile() {
         reader.onload = async (e) => {
             const logs = [];
             const rows = parseOrdersCSV(e.target.result);
-    
             for (const row of rows) {
                 try {
                     const creds = customerCredentials.find(
@@ -379,18 +378,22 @@ function ImportFile() {
                         setOrderLogs([...logs]);
                         continue;
                     }
-    
                     await loginCustomer(creds.email, creds.password);
                     console.log("Logged in as", creds.email);
-    
                     for (const item of row.items) {
                         const product = await getProductBySku(item.sku);
                         if (!product) {
                             console.log(`SKU ${item.sku} not found`);
                             continue;
                         }
-                        await addToCartWithToken(product.id, item.qty);
-                        console.log(`Added to cart: ${item.sku} x${item.qty}`);
+
+                        try {
+                            await addToCartWithToken(product.id, item.qty);
+                            console.log(`Added to cart: ${item.sku} x${item.qty}`);
+                        } catch (error) {
+                            const msg = error.response?.data?.message ?? error.message;
+                            console.log(`SKIP ${item.sku} : ${msg}`);
+                        }
                     }
     
                     const address = {
