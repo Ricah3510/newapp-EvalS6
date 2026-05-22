@@ -35,8 +35,8 @@ function AjouterStock({ productId, stockInitiale }) {
                     disabled={isSubmitting}
                 />
                 
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     className="btn btn--accent"
                     disabled={isSubmitting}
                 >

@@ -180,7 +180,17 @@ export const addToCartWithToken = async (productId, quantity) => {
     return response.data;
 };
 
-export const updateOrderDate = async (orderId, date, heure) => {
+export const updateOrderDate0 = async (orderId, date, heure) => {
     await nodeApi.patch(`/orders/${orderId}/date`, { date, heure });
     console.log("date update")
+};
+
+export const updateOrderDate = async (orderId, date, heure) => {
+    const [day, month, year] = date.split("/");
+    const mysqlDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    
+    await nodeApi.patch(`/orders/${orderId}/date`, {
+        date:  mysqlDate,
+        heure: heure.padStart(5, "0")
+    });
 };

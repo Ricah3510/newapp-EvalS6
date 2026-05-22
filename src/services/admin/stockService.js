@@ -3,7 +3,8 @@ import api from "../../api/axios";
 import {getOrdersAdmin} from "./orderAdminService";
 import {updateProductStock} from "./importService";
 import nodeApi from "../../api/axiosNode";
-import { getProductByIdAdmin } from "./adminService";
+import { getProductByIdAdmin, getProducts } from "./adminService";
+import apiAdmin from "../../api/axiosAdmin";
 
 
 const DEFAULT_CUSTOMER = {
@@ -139,6 +140,27 @@ export const getStockPending = async (productId) => {
     });
     return stockPending;
 };
+
+export const getProductNonPromo = async () => {
+    const response = await getProducts();
+    const products = response.data;
+    console.log(products);
+    const retour = [];
+    for (const product of products){
+        if (product.special_price == null) {
+            retour.push(product);
+            console.log("Prix special null");
+        }
+        // console.log("Price: " + product.price);
+        // console.log("Special Price: " + product.special_price);
+        //     if (product.special_price != product.price) {
+        //         retour.push(product);
+        //     }
+    }
+    // console.log("Taille retour" + retour.length());
+    return retour;
+}
+
 
 export const stockReel = async (productId) => {
     const stockDispo = await getStockDisponible(productId);

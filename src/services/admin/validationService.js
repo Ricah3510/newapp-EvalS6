@@ -21,7 +21,7 @@ const validateHeaders = (firstLine, type) => {
 
 const isValidDate = (value) => {
     if (!value) return false;
-    const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+    const regex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
     if (!regex.test(value)) return false;
 
     const [day, month, year] = value.split("/").map(Number);
@@ -33,14 +33,23 @@ const isValidDate = (value) => {
     );
 };
 
-export const toMysqlDate = (ddmmyyyy) => {
+export const toMysqlDate0 = (ddmmyyyy) => {
     const [day, month, year] = ddmmyyyy.split("/");
     return `${year}-${month}-${day}`;
 };
 
+export const toMysqlDate = (ddmmyyyy) => {
+    const [day, month, year] = ddmmyyyy.split("/");
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+};
+
 const isPositiveAmount = (value) => {
     if (value === undefined || value === null || value.trim() === "") return true;
-    const num = parseFloat(value);
+    const cleaned = value
+        .replace(/"/g, "")
+        .replace(/\s/g, "")
+        .replace(",", ".");
+    const num = parseFloat(cleaned);
     return !isNaN(num) && num >= 0;
 };
 
@@ -82,13 +91,21 @@ export const validateProductsCSV = (text) => {
 
     lines.slice(1).forEach((line, i) => {
         const lineNum = i + 2;
-        const [type, sku, name, categorie, prix_vente, prix_achat, prix_promo, stock_initial] =
-            line.split(",").map((v) => v?.trim());
+
+        // ← Parser avec guillemets
+        const regex = /(".*?"|[^,]+)(?=,|$)/g;
+        const cols  = [];
+        let match;
+        while ((match = regex.exec(line)) !== null) {
+            cols.push(match[1].replace(/^"|"$/g, "").trim());
+        }
+
+        const [type, sku, name, categorie, prix_vente, prix_achat, prix_promo, stock_initial] = cols;
         const lineErrors = [];
 
-        // if (!["simple", "virtual", "configurable"].includes(type)) {
-        //     lineErrors.push(`Type invalide : "${type}" (attendu: simple, virtual, configurable)`);
-        // }
+        if (!["simple", "virtual", "configurable"].includes(type)) {
+            lineErrors.push(`Type invalide : "${type}"`);
+        }
         if (!sku)       lineErrors.push("SKU manquant");
         if (!name)      lineErrors.push("Nom manquant");
         if (!categorie) lineErrors.push("Catégorie manquante");
@@ -131,7 +148,7 @@ export const validateOrdersCSV = (text) => {
             lineErrors.push(`Date invalide : "${date}" (attendu: DD/MM/YYYY)`);
         }
 
-        if (!heure || !/^\d{2}:\d{2}$/.test(heure)) {
+        if (!heure || !/^\d{1,2}:\d{2}$/.test(heure)) {
             lineErrors.push(`Heure invalide : "${heure}" (attendu: HH:MM)`);
         }
 

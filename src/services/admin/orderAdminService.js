@@ -77,3 +77,9 @@ export const shipOrder = async (order) => {
         );
     return response.data;
 };
+
+export const cancledOrder = async (order) => {
+    const response = await apiAdmin.post(`/sales/orders/${order.id}/cancel`);
+    return response.data;
+};
+

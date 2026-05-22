@@ -90,7 +90,17 @@ function ProductFiche() {
 
                         <p className="fiche-price">
                             {product.formatted_price}
+                            {console.log(product.regular_price)}
                         </p>
+                        {
+                            product.regular_price ?(
+                                product.regular_price != product.price ? ( <p>EN PROMO </p>
+                                ) : (
+                                    <p>Prix Normal</p>
+                                )
+                            ) : ( console.log ("prix noraml"))
+                            
+                        }
 
                         <hr className="fiche-divider" />
 

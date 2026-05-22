@@ -219,6 +219,33 @@ function ImportFile() {
         return created.data.id;
     };
 
+    const cleanPrice = (val) => {
+        if (!val || val.trim() === "") return "";
+        return val
+            .replace(/\s/g, "")
+            .replace(",", ".");
+    };
+
+    const parseCSVLine = (line) => {
+        const cols = [];
+        let current = "";
+        let inQuotes = false;
+    
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === "," && !inQuotes) {
+                cols.push(current.trim());
+                current = "";
+            } else {
+                current += char;
+            }
+        }
+        cols.push(current.trim()); // dernière colonne
+        return cols;
+    };
+    
     const importProducts = async () => {
         if (!productFile) return;
         setProductLoading(true);
@@ -227,22 +254,40 @@ function ImportFile() {
         const reader = new FileReader();
         reader.onload = async (e) => {
             const lines = e.target.result.split("\n");
+            // const rows = lines
+            //     .slice(1)
+            //     .filter((line) => line.trim() !== "")
+            //     .map((line) => {
+            //         const [type, sku, name, Categorie, prix_vente, prix_achat, prix_promo, stock_initial] = line.split(",");
+            //         return {
+            //             type: type?.trim() || "simple",
+            //             sku: sku?.trim(),
+            //             name: name?.trim(),
+            //             Categorie: Categorie?.trim(),
+            //             prix_vente: prix_vente?.trim(),
+            //             prix_achat: prix_achat?.trim(),
+            //             prix_promo: prix_promo?.trim(),
+            //             stock_initial: stock_initial?.trim(),
+            //         };
+            //     });
+
             const rows = lines
-                .slice(1)
-                .filter((line) => line.trim() !== "")
-                .map((line) => {
-                    const [type, sku, name, Categorie, prix_vente, prix_achat, prix_promo, stock_initial] = line.split(",");
-                    return {
-                        type: type?.trim() || "simple",
-                        sku: sku?.trim(),
-                        name: name?.trim(),
-                        Categorie: Categorie?.trim(),
-                        prix_vente: prix_vente?.trim(),
-                        prix_achat: prix_achat?.trim(),
-                        prix_promo: prix_promo?.trim(),
-                        stock_initial: stock_initial?.trim(),
-                    };
-                });
+                        .slice(1)
+                        .filter((line) => line.trim() !== "")
+                        .map((line) => {
+                            const cols = parseCSVLine(line);
+                            const [type, sku, name, Categorie, prix_vente, prix_achat, prix_promo, stock_initial] = cols;
+                            return {
+                                type:          type?.trim()   || "simple",
+                                sku:           sku?.trim(),
+                                name:          name?.trim(),
+                                Categorie:     Categorie?.trim(),
+                                prix_vente:    prix_vente?.trim(),
+                                prix_achat:    prix_achat?.trim(),
+                                prix_promo:    prix_promo?.trim(),
+                                stock_initial: stock_initial?.trim(),
+                            };
+                        });
 
             const logs = [...productLogs, { status: "info", text: `${rows.length} lignes à intégrer.` }];
             setProductLogs(logs);
@@ -269,8 +314,8 @@ function ImportFile() {
                     formData.append("url_key", toUrlKey(row.name));
                     formData.append("short_description", row.name);
                     formData.append("description", row.name);
-                    formData.append("price", row.prix_vente);
-                    formData.append("cost", row.prix_achat);
+                    formData.append("price", cleanPrice(row.prix_vente));
+                    formData.append("cost", cleanPrice(row.prix_achat));
                     formData.append("status", "1");
                     formData.append("visible_individually", "1");
                     formData.append("guest_checkout", "1");
@@ -282,7 +327,7 @@ function ImportFile() {
                     // formData.append("special_price_to", toMysqlDate("01/02/2000"));
 
                     if (row.prix_promo && row.prix_promo !== "") {
-                        formData.append("special_price", row.prix_promo);
+                        formData.append("special_price", cleanPrice(row.prix_promo));
                     }
                     await updateProductDetails(productId, formData);
 

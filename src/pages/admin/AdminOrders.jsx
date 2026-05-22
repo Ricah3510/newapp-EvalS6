@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import {
     getOrdersAdmin,
     invoiceOrder,
-    shipOrder
+    shipOrder,
+    cancledOrder
 } from "../../services/admin/orderAdminService";
 import MainLayout from "../../layouts/admin/MainLayout";
 import "../../styles/admin.css";
@@ -48,6 +49,15 @@ function AdminOrders() {
         }
     };
 
+    const handleCanceld = async (order) => {
+        try {
+            await cancledOrder(order);
+            loadOrders();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     return (
         <MainLayout>
             <div className="page">
@@ -61,6 +71,7 @@ function AdminOrders() {
                         Chargement des commandes...
                     </div>
                 ) : (
+                    
                     <div className="admin-table-container">
                         <table className="admin-table">
                             <thead>
@@ -73,6 +84,7 @@ function AdminOrders() {
                                     <th>Date</th>
                                     <th>Livraison</th>
                                     <th>Paiement</th>
+                                    {/* <th>Annulation</th> */}
                                 </tr>
                             </thead>
 
@@ -95,6 +107,8 @@ function AdminOrders() {
                                                     ? 'badge--processing'
                                                     : order.status === 'pending'
                                                     ? 'badge--pending'
+                                                    : order.status === 'canceled'
+                                                    ? 'badge--canceled'
                                                     : 'badge--success'}`
                                                 }>
                                                 {order.status}
@@ -133,6 +147,18 @@ function AdminOrders() {
                                                 <span className="badge badge--success">Payé</span>
                                             )}
                                         </td>
+                                        {/* <td>
+                                            {(order.invoices.length === 0 && order.status != "canceled") ? (
+                                                <button
+                                                    className="btn-table-action btn-table-action--danger"
+                                                    onClick={() => handleCanceld(order)}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            ) : (
+                                                <span className="badge badge--success">----</span>
+                                            )}
+                                        </td> */}
                                     </tr>
                                 ))}
                             </tbody>

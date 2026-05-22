@@ -17,7 +17,7 @@ import Wishlist from "../pages/Wishlist";
 import ImportImages from "../pages/admin/ImportImage";
 import Stock from "../pages/admin/Stock";
 import ProductStock from "../pages/admin/ProductStock";
-
+import ProductStockAll from "../pages/admin/ProductStockAll";
 
 const router = createBrowserRouter([
 
@@ -83,6 +83,15 @@ const router = createBrowserRouter([
         element:(
             <AdminRoute>
                 <ResetData />
+            </AdminRoute>
+        )
+    },
+
+    {
+        path: "/admin/stock-all",
+        element:(
+            <AdminRoute>
+                <ProductStockAll />
             </AdminRoute>
         )
     },
