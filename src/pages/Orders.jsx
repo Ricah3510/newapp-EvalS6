@@ -19,7 +19,7 @@ const StatusBadge = ({ status }) => {
         canceled:   "Canceled",
     };
     return (
-        <span className={`order-status`} >
+        <span className={`order-status ${map[status] ?? ""}`}>
             {labels[status] ?? status}
         </span>
     );

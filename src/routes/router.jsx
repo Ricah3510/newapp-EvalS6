@@ -18,6 +18,7 @@ import ImportImages from "../pages/admin/ImportImage";
 import Stock from "../pages/admin/Stock";
 import ProductStock from "../pages/admin/ProductStock";
 import ProductStockAll from "../pages/admin/ProductStockAll";
+import ProductStockAll2 from "../pages/admin/ProductStockAll2";
 
 const router = createBrowserRouter([
 
@@ -92,6 +93,15 @@ const router = createBrowserRouter([
         element:(
             <AdminRoute>
                 <ProductStockAll />
+            </AdminRoute>
+        )
+    },
+
+    {
+        path: "/admin/stock-all-2",
+        element:(
+            <AdminRoute>
+                <ProductStockAll2 />
             </AdminRoute>
         )
     },

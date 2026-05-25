@@ -125,6 +125,8 @@ function ProductStockAll() {
         setItems(newItems);
         setNbLigne(nbLigne - 1);
     };
+
+
     if (!products) {
         return (
             <MainLayout>
@@ -156,7 +158,6 @@ function ProductStockAll() {
                     Valider
                     </button>   
                 </form> */}
-                <hr />
                 <form onSubmit={handleSubmit}>
                 {
                     items.map( (item, index) => (
@@ -189,14 +190,7 @@ function ProductStockAll() {
                 <button type="submit">
                     Envoyer
                 </button>
-
             </form>
-            {/* <button
-                type="button"
-                onClick={addItem}
-                >
-                Ajouter ligne
-            </button> */}
             </div>
         </MainLayout>
     );

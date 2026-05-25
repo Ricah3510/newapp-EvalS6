@@ -158,3 +158,9 @@
 
 .fiche-breadcrumb a:hover { color: var(--clr-charcoal); }
 .fiche-breadcrumb span    { color: var(--clr-border); }
+
+.fiche-info .promo-badge {
+    position:    static;
+    display:     inline-block;
+    margin-left: 0.5rem;
+}

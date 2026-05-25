@@ -108,3 +108,23 @@
     font-size:     0.9rem;
     margin-bottom: 1.5rem;
 }
+
+.order-status.pending {
+    background: #FEF3C7;
+    color:      #92400E;
+}
+
+.order-status.processing {
+    background: #DBEAFE;
+    color:      #1E40AF;
+}
+
+.order-status.completed {
+    background: #D1FAE5;
+    color:      #065F46;
+}
+
+.order-status.canceled {
+    background: #FEE2E2;
+    color:      #991B1B;
+}

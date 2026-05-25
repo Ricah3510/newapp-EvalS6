@@ -178,3 +178,38 @@
     height:        340px;
     border-radius: var(--radius);
 }
+
+
+/* ── Badge promo ─────────────────────────────────────────────── */
+.promo-badge {
+    position:        absolute;
+    top:             0.75rem;
+    left:            0.75rem;
+    background:      var(--clr-accent);
+    color:           #fff;
+    font-size:       0.75rem;
+    font-weight:     700;
+    letter-spacing:  0.04em;
+    padding:         0.25rem 0.625rem;
+    border-radius:   20px;
+    z-index:         2;
+}
+
+/* ── Prix promo ──────────────────────────────────────────────── */
+.product-card-prices {
+    display:     flex;
+    align-items: center;
+    gap:         0.5rem;
+    flex-wrap:   wrap;
+}
+
+.product-card-price-old {
+    font-size:       0.85rem;
+    font-weight:     400;
+    color:           var(--clr-muted);
+    text-decoration: line-through;
+}
+
+.product-card-price.promo {
+    color: #C0392B;
+}

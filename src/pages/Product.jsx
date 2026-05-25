@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import ProductCard from "../components/ProductCard";
-import { getProductsByCategory } from "../services/productService";
+import ProductCardPromo from "../components/ProductCardPromo";
+
+import { getProductsByCategory, isPromo } from "../services/productService";
 import "../styles/home.css";
 import "../styles/product-card.css";
 import AddToCartForm from "../components/AddToCartForm";
@@ -59,7 +61,13 @@ function Product() {
                     <div className="products-grid">
                         {products.map((product) => (
                             <div key={product.id} className="product-card">
-                                <ProductCard product={product} />
+                                {
+                                    isPromo(product) ? (
+                                        <ProductCardPromo product={product}/>
+                                    ) : (
+                                        <ProductCard product={product} />
+                                    )
+                                }
                                 <AddToCartForm productId={product.id} />
                             </div>
                         ))}

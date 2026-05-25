@@ -188,9 +188,10 @@ export const updateOrderDate0 = async (orderId, date, heure) => {
 export const updateOrderDate = async (orderId, date, heure) => {
     const [day, month, year] = date.split("/");
     const mysqlDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    const mysqlHeure = heure.padStart(5, "0");
     
     await nodeApi.patch(`/orders/${orderId}/date`, {
         date:  mysqlDate,
-        heure: heure.padStart(5, "0")
+        heure: mysqlHeure
     });
 };

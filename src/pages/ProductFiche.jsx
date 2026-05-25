@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
-import { getProductById } from "../services/productService";
+import { getProductById, isPromo, getDiscount } from "../services/productService";
+
 import AddToCartForm from "../components/AddToCartForm";
 import "../styles/home.css";
 import "../styles/product-card.css";
@@ -88,19 +89,39 @@ function ProductFiche() {
                             <h1>{product.name}</h1>
                         </div>
 
-                        <p className="fiche-price">
+                        {/* <p className="fiche-price">
                             {product.formatted_price}
                             {console.log(product.regular_price)}
                         </p>
+                        <p className="product-card-price-old">
+                            {product.formatted_regular_price}
+                        </p>   
                         {
-                            product.regular_price ?(
-                                product.regular_price != product.price ? ( <p>EN PROMO </p>
-                                ) : (
-                                    <p>Prix Normal</p>
-                                )
-                            ) : ( console.log ("prix noraml"))
-                            
-                        }
+                            isPromo(product) ? (
+                                <p color="danger" >EN PROMO -{getDiscount(product)}%</p>
+                            ) : (
+                                <p>Prix Normal</p>
+                            )
+                        } */}
+                        <div className="product-card-prices">
+                            {isPromo(product) ? (
+                                <>
+                                    <p className="product-card-price-old">
+                                        {product.formatted_regular_price}
+                                    </p>
+                                    <p className="fiche-price promo">
+                                        {product.formatted_special_price}
+                                    </p>
+                                    <span className="promo-badge">
+                                        -{getDiscount(product)}%
+                                    </span>
+                                </>
+                            ) : (
+                                <p className="fiche-price">
+                                    {product.formatted_price}
+                                </p>
+                            )}
+                        </div>
 
                         <hr className="fiche-divider" />
 

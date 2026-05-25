@@ -11,11 +11,31 @@ import "../../styles/admin.css";
 function AdminOrders() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const [selectedStatus, setSelectedStatus] = useState("");
+    const [selectedTrie, setSelectedTrie] = useState("");
     useEffect(() => {
         loadOrders();
     }, []);
-
+    const filteredOrders = orders
+        .filter((order) => {
+            if ( selectedStatus === "" ) {
+                return true;
+            }
+            return ( order.status === selectedStatus );
+        })
+        .sort((a, b) => {
+            if (selectedTrie === "") {
+                return a.id - b.id;
+            }else if( selectedTrie === "montant"){
+                return a.grand_total - b.grand_total;
+            }else if( selectedTrie === "date"){
+                return new Date(a.created_at) - new Date(b.created_at);
+            }else if( selectedTrie === "customer_first_name"){
+                return a.customer_first_name.localeCompare(b.customer_first_name);
+            }
+            return 0;
+        });
+    
     const loadOrders = async () => {
         try {
             setLoading(true);
@@ -27,7 +47,6 @@ function AdminOrders() {
             setLoading(false);
         }
     };
-
     const handleShip = async (order) => {
         try {
             await shipOrder(order);
@@ -63,6 +82,24 @@ function AdminOrders() {
             <div className="page">
                 <h1 className="page-title">Gestion Commandes</h1>
                 <p className="page-subtitle">Suivi, facturation et expédition des ventes</p>
+                {/* <select value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value ) }
+                >
+                    <option value=""> Tous </option>
+                    <option value="pending"> Pending </option>
+                    <option value="processing"> Processing </option>
+                    <option value="completed"> Completed </option>
+                    <option value="canceled"> Canceled </option>
+                </select>
+                    <select value={selectedTrie}
+                        onChange={(e) => setSelectedTrie(e.target.value) }
+                    >
+                        <option value=""> Colonne de trie</option>
+                        <option value="montant"> Montant </option>
+                        <option value="date"> Date </option>
+                        <option value="customer_first_name"> Nom client </option>
+                    </select> */}
+                    <br />
                 <hr className="page-divider" />
 
                 {loading ? (
@@ -89,7 +126,7 @@ function AdminOrders() {
                             </thead>
 
                             <tbody>
-                                {orders.map((order) => (
+                                {filteredOrders.map((order) => (
                                     <tr key={order.id}>
                                         <td className="highlight">#{order.id}</td>
                                         {/* <td>{order.increment_id}</td> */}

@@ -151,13 +151,7 @@ export const getProductNonPromo = async () => {
             retour.push(product);
             console.log("Prix special null");
         }
-        // console.log("Price: " + product.price);
-        // console.log("Special Price: " + product.special_price);
-        //     if (product.special_price != product.price) {
-        //         retour.push(product);
-        //     }
     }
-    // console.log("Taille retour" + retour.length());
     return retour;
 }
 
